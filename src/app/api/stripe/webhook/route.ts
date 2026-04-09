@@ -79,7 +79,8 @@ export async function POST(req: NextRequest) {
 
         // Fetch the subscription to get period end
         const stripeSub = await stripe.subscriptions.retrieve(stripeSubscriptionId);
-        const currentPeriodEnd = new Date(stripeSub.current_period_end * 1000).toISOString();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const currentPeriodEnd = new Date((stripeSub as any).current_period_end * 1000).toISOString();
 
         await upsertSubscription(supabase, {
           clerkUserId,
@@ -112,7 +113,8 @@ export async function POST(req: NextRequest) {
             stripeSubscriptionId: sub.id,
             planKey: data.plan_key,
             status: sub.status,
-            currentPeriodEnd: new Date(sub.current_period_end * 1000).toISOString(),
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            currentPeriodEnd: new Date((sub as any).current_period_end * 1000).toISOString(),
           });
           break;
         }
@@ -123,7 +125,8 @@ export async function POST(req: NextRequest) {
           stripeSubscriptionId: sub.id,
           planKey,
           status: sub.status,
-          currentPeriodEnd: new Date(sub.current_period_end * 1000).toISOString(),
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          currentPeriodEnd: new Date((sub as any).current_period_end * 1000).toISOString(),
         });
         break;
       }
