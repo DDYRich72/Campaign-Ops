@@ -25,20 +25,20 @@ const iconMap = {
 };
 
 const changeTypeStyles = {
-  positive: 'text-green-600',
+  positive: 'text-emerald-400',
   negative: 'text-red-500',
   neutral: 'text-slate-500',
 };
 
 export function StatCard({ stat }: { stat: DashboardStat }) {
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+    <div className="bg-surface-card rounded-xl border border-border-subtle shadow-card p-6">
       <div className="flex items-start justify-between">
         <div>
           <p className="text-sm font-medium text-slate-500">{stat.title}</p>
-          <p className="mt-1.5 text-2xl font-bold text-slate-900">{stat.value}</p>
+          <p className="mt-1.5 text-2xl font-bold text-slate-100">{stat.value}</p>
         </div>
-        <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-violet-50 text-violet-600">
+        <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-violet-500/15 text-violet-400">
           {iconMap[stat.iconType]}
         </div>
       </div>

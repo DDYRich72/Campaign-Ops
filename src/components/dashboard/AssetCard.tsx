@@ -2,12 +2,12 @@ import { Asset, AssetType } from '@/data/mock';
 import { Badge } from '@/components/ui/Badge';
 
 const typeConfig: Record<AssetType, { label: string; color: string }> = {
-  email: { label: 'Email', color: 'text-blue-600 bg-blue-50' },
-  social_post: { label: 'Social', color: 'text-pink-600 bg-pink-50' },
-  ad_copy: { label: 'Ad Copy', color: 'text-orange-600 bg-orange-50' },
-  blog_outline: { label: 'Blog', color: 'text-green-600 bg-green-50' },
-  landing_page: { label: 'Landing Page', color: 'text-indigo-600 bg-indigo-50' },
-  sms: { label: 'SMS', color: 'text-violet-600 bg-violet-50' },
+  email: { label: 'Email', color: 'text-blue-400 bg-blue-500/15' },
+  social_post: { label: 'Social', color: 'text-pink-400 bg-pink-500/15' },
+  ad_copy: { label: 'Ad Copy', color: 'text-orange-400 bg-orange-500/15' },
+  blog_outline: { label: 'Blog', color: 'text-emerald-400 bg-emerald-500/15' },
+  landing_page: { label: 'Landing Page', color: 'text-indigo-400 bg-indigo-500/15' },
+  sms: { label: 'SMS', color: 'text-violet-400 bg-violet-500/15' },
 };
 
 const typeIcons: Record<AssetType, React.ReactNode> = {
@@ -49,22 +49,22 @@ export function AssetCard({ asset }: { asset: Asset }) {
   const { label, color } = typeConfig[asset.type];
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 hover:border-violet-200 hover:shadow-md transition-all group">
+    <div className="bg-surface-card rounded-xl border border-border-subtle shadow-card p-4 hover:border-violet-500/30 hover:shadow-glow-violet transition-all group">
       <div className="flex items-start justify-between mb-3">
         <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${color}`}>
           {typeIcons[asset.type]}
         </div>
         <Badge variant="default">{label}</Badge>
       </div>
-      <p className="text-sm font-medium text-slate-800 leading-snug line-clamp-2 group-hover:text-violet-700 transition-colors">
+      <p className="text-sm font-medium text-slate-200 leading-snug line-clamp-2 group-hover:text-violet-300 transition-colors">
         {asset.title}
       </p>
       <p className="mt-1.5 text-xs text-slate-500 line-clamp-2 leading-relaxed">
         {asset.preview}
       </p>
       <div className="mt-3 flex items-center justify-between">
-        <p className="text-xs text-slate-400">{asset.wordCount} words</p>
-        <button className="text-xs font-medium text-violet-600 hover:text-violet-800 transition-colors">
+        <p className="text-xs text-slate-500">{asset.wordCount} words</p>
+        <button className="text-xs font-medium text-violet-400 hover:text-violet-300 transition-colors">
           Copy
         </button>
       </div>

@@ -27,14 +27,15 @@ const personas = [
 
 export function WhoItsForSection() {
   return (
-    <section className="py-20 lg:py-28 bg-white">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <section className="py-20 lg:py-28 bg-surface-sidebar relative">
+      <div className="absolute inset-0 bg-dot-grid-faint pointer-events-none" />
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center mb-12">
-          <p className="text-sm font-semibold text-violet-600 uppercase tracking-widest mb-3">Who It&apos;s For</p>
-          <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">
+          <p className="text-sm font-semibold text-violet-400 uppercase tracking-widest mb-3">Who It&apos;s For</p>
+          <h2 className="text-3xl sm:text-4xl font-bold text-slate-100 tracking-tight font-display">
             Built for people who do everything
           </h2>
-          <p className="mt-4 text-lg text-slate-600">
+          <p className="mt-4 text-lg text-slate-400">
             You shouldn&apos;t need a marketing team to run a great campaign. AI Campaign Operator is your team.
           </p>
         </div>
@@ -43,13 +44,13 @@ export function WhoItsForSection() {
           {personas.map((persona) => (
             <div
               key={persona.title}
-              className="rounded-xl border border-slate-200 bg-white p-6 hover:border-violet-200 hover:shadow-md transition-all"
+              className="rounded-xl border border-border-subtle bg-surface-card p-6 hover:border-violet-500/30 hover:shadow-glow-violet transition-all shadow-card"
             >
               <div className="text-3xl mb-4">{persona.icon}</div>
-              <h3 className="text-base font-semibold text-slate-900 mb-3">{persona.title}</h3>
+              <h3 className="text-base font-semibold text-slate-200 mb-3">{persona.title}</h3>
               <p className="text-xs text-slate-500 italic mb-3 leading-relaxed">{persona.painPoint}</p>
-              <div className="h-px bg-slate-100 mb-3" />
-              <p className="text-sm text-slate-600 leading-relaxed">{persona.solution}</p>
+              <div className="h-px bg-border-subtle mb-3" />
+              <p className="text-sm text-slate-400 leading-relaxed">{persona.solution}</p>
             </div>
           ))}
         </div>

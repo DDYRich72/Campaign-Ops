@@ -1,6 +1,6 @@
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-export type CampaignStatus = 'draft' | 'active' | 'paused' | 'completed';
+export type CampaignStatus = 'draft' | 'ready' | 'active' | 'archived';
 
 export type Channel = 'email' | 'social' | 'paid_ads' | 'seo' | 'sms';
 
@@ -111,7 +111,7 @@ export const mockCampaigns: Campaign[] = [
     primaryCTA: 'Book Your Free Exam',
     audiencePainPoints: 'Dental anxiety, cost concerns, finding a trustworthy local dentist',
     uniqueSellingPoints: 'Gentle care approach, same-day appointments, accepts most insurance',
-    status: 'completed',
+    status: 'archived',
     createdAt: '2025-03-01T09:00:00Z',
     updatedAt: '2025-05-31T17:00:00Z',
     assetCount: 8,

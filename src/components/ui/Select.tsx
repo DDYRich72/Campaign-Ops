@@ -31,11 +31,11 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
             ref={ref}
             id={selectId}
             className={cn(
-              'w-full appearance-none rounded-lg border bg-white px-3 py-2.5 pr-8 text-sm text-slate-900 transition-colors',
+              'w-full appearance-none rounded-lg border bg-surface-raised px-3 py-2.5 pr-8 text-sm text-slate-200 transition-colors',
               'focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent',
               error
-                ? 'border-red-400 focus:ring-red-400'
-                : 'border-slate-200 hover:border-slate-300',
+                ? 'border-red-500/60 focus:ring-red-500'
+                : 'border-border-subtle hover:border-border',
               className
             )}
             {...props}
@@ -61,8 +61,8 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
             </svg>
           </div>
         </div>
-        {error && <p className="mt-1.5 text-xs text-red-600">{error}</p>}
-        {hint && !error && <p className="mt-1.5 text-xs text-slate-500">{hint}</p>}
+        {error && <p className="mt-1.5 text-xs text-red-400">{error}</p>}
+        {hint && !error && <p className="mt-1.5 text-xs text-slate-600">{hint}</p>}
       </div>
     );
   }

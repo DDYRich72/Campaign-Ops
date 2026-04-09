@@ -125,11 +125,12 @@ export function ExampleOutputsSection() {
   const [activeTab, setActiveTab] = useState<Tab>('Email');
 
   return (
-    <section className="py-20 lg:py-28 bg-slate-900">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <section className="py-20 lg:py-28 bg-surface-body relative">
+      <div className="absolute inset-0 bg-dot-grid opacity-40 pointer-events-none" />
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center mb-12">
           <p className="text-sm font-semibold text-violet-400 uppercase tracking-widest mb-3">Example Outputs</p>
-          <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
+          <h2 className="text-3xl sm:text-4xl font-bold text-slate-100 tracking-tight font-display">
             See what gets generated
           </h2>
           <p className="mt-4 text-lg text-slate-400">
@@ -146,8 +147,8 @@ export function ExampleOutputsSection() {
               className={cn(
                 'rounded-full px-4 py-2 text-sm font-medium transition-colors',
                 activeTab === tab
-                  ? 'bg-violet-600 text-white'
-                  : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white'
+                  ? 'bg-violet-600 text-white shadow-glow-violet'
+                  : 'bg-surface-raised text-slate-400 hover:bg-border-subtle hover:text-slate-200 border border-border-subtle'
               )}
             >
               {tab}
@@ -157,14 +158,14 @@ export function ExampleOutputsSection() {
 
         {/* Output card */}
         <div className="mx-auto max-w-3xl">
-          <div className="rounded-2xl border border-slate-700 bg-slate-800 overflow-hidden">
+          <div className="rounded-2xl border border-border-subtle bg-surface-card shadow-card overflow-hidden">
             {/* Card header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-700">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border-subtle">
               <div>
-                <p className="text-sm font-semibold text-white">{outputs[activeTab].title}</p>
-                <p className="text-xs text-slate-400 mt-0.5">{outputs[activeTab].meta}</p>
+                <p className="text-sm font-semibold text-slate-200">{outputs[activeTab].title}</p>
+                <p className="text-xs text-slate-500 mt-0.5">{outputs[activeTab].meta}</p>
               </div>
-              <button className="flex items-center gap-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 px-3 py-1.5 text-xs font-medium text-slate-300 transition-colors">
+              <button className="flex items-center gap-1.5 rounded-lg bg-surface-raised hover:bg-border-subtle border border-border-subtle px-3 py-1.5 text-xs font-medium text-slate-400 transition-colors">
                 <svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
                   <path d="M8 2a1 1 0 000 2h2a1 1 0 100-2H8z" />
                   <path d="M3 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v6h-4.586l1.293-1.293a1 1 0 00-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L10.414 13H15v3a2 2 0 01-2 2H5a2 2 0 01-2-2V5zM15 11h2a1 1 0 110 2h-2v-2z" />
@@ -174,7 +175,7 @@ export function ExampleOutputsSection() {
             </div>
             {/* Content */}
             <div className="px-6 py-5">
-              <pre className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap font-mono">
+              <pre className="text-sm text-slate-400 leading-relaxed whitespace-pre-wrap font-mono">
                 {outputs[activeTab].content}
               </pre>
             </div>

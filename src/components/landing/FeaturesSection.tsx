@@ -7,6 +7,7 @@ const features = [
     ),
     title: 'AI Campaign Strategy',
     description: 'Get a complete 30-day marketing plan built around your specific offer, audience, and goals — in minutes.',
+    color: 'text-violet-400 bg-violet-500/15',
   },
   {
     icon: (
@@ -16,6 +17,7 @@ const features = [
     ),
     title: 'Multi-Channel Output',
     description: 'Generate content for email, social media, paid ads, SEO blog posts, landing pages, and SMS — all in one go.',
+    color: 'text-cyan-400 bg-cyan-500/15',
   },
   {
     icon: (
@@ -25,6 +27,7 @@ const features = [
     ),
     title: 'Ready-to-Use Content',
     description: 'Every asset is production-ready — copy-paste emails, captions, ad headlines, and blog outlines straight into your tools.',
+    color: 'text-emerald-400 bg-emerald-500/15',
   },
   {
     icon: (
@@ -33,7 +36,8 @@ const features = [
       </svg>
     ),
     title: 'Deep Audience Targeting',
-    description: 'Input your audience\'s pain points and the AI tailors every message to resonate with the right people.',
+    description: "Input your audience's pain points and the AI tailors every message to resonate with the right people.",
+    color: 'text-violet-400 bg-violet-500/15',
   },
   {
     icon: (
@@ -43,6 +47,7 @@ const features = [
     ),
     title: 'Brand Voice Matching',
     description: 'Set your tone — energetic, professional, warm — and every piece of content stays consistent with how your brand sounds.',
+    color: 'text-amber-400 bg-amber-500/15',
   },
   {
     icon: (
@@ -52,19 +57,21 @@ const features = [
     ),
     title: '30-Day Content Calendar',
     description: 'Walk away with a day-by-day publishing schedule so you always know what to post and when.',
+    color: 'text-cyan-400 bg-cyan-500/15',
   },
 ];
 
 export function FeaturesSection() {
   return (
-    <section className="py-20 lg:py-28 bg-slate-50">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <section id="features" className="py-20 lg:py-28 bg-surface-sidebar relative">
+      <div className="absolute inset-0 bg-dot-grid-faint pointer-events-none" />
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center mb-12">
-          <p className="text-sm font-semibold text-violet-600 uppercase tracking-widest mb-3">Features</p>
-          <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">
+          <p className="text-sm font-semibold text-violet-400 uppercase tracking-widest mb-3">Features</p>
+          <h2 className="text-3xl sm:text-4xl font-bold text-slate-100 tracking-tight font-display">
             Everything you need to run a campaign
           </h2>
-          <p className="mt-4 text-lg text-slate-600">
+          <p className="mt-4 text-lg text-slate-400">
             Stop piecing together tools. One input, one platform, one complete campaign.
           </p>
         </div>
@@ -73,13 +80,13 @@ export function FeaturesSection() {
           {features.map((feature) => (
             <div
               key={feature.title}
-              className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 hover:shadow-md hover:border-violet-200 transition-all"
+              className="bg-surface-card rounded-xl border border-border-subtle shadow-card p-6 hover:border-violet-500/30 hover:shadow-glow-violet transition-all"
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-violet-50 text-violet-600 mb-4">
+              <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${feature.color} mb-4`}>
                 {feature.icon}
               </div>
-              <h3 className="text-base font-semibold text-slate-800 mb-2">{feature.title}</h3>
-              <p className="text-sm text-slate-600 leading-relaxed">{feature.description}</p>
+              <h3 className="text-base font-semibold text-slate-200 mb-2">{feature.title}</h3>
+              <p className="text-sm text-slate-500 leading-relaxed">{feature.description}</p>
             </div>
           ))}
         </div>

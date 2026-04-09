@@ -9,18 +9,19 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantClasses = {
   primary:
-    'bg-violet-600 hover:bg-violet-700 text-white border border-transparent shadow-sm',
+    'btn-shimmer text-white border border-violet-600/50 shadow-glow-violet hover:shadow-glow-violet-lg hover:border-violet-500 transition-shadow',
   secondary:
-    'bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-sm',
-  ghost: 'bg-transparent hover:bg-slate-100 text-slate-600 border border-transparent',
+    'bg-surface-raised hover:bg-border-subtle text-slate-200 border border-border-DEFAULT hover:border-border-bright transition-colors',
+  ghost:
+    'bg-transparent hover:bg-surface-raised text-slate-400 hover:text-slate-200 border border-transparent hover:border-border-subtle transition-colors',
   destructive:
-    'bg-red-600 hover:bg-red-700 text-white border border-transparent shadow-sm',
+    'bg-red-600/90 hover:bg-red-500 text-white border border-red-500/50 transition-colors',
 };
 
 const sizeClasses = {
-  sm: 'h-8 px-3 text-xs rounded-lg',
-  md: 'h-10 px-4 text-sm rounded-lg',
-  lg: 'h-11 px-6 text-base rounded-xl',
+  sm: 'h-8 px-3 text-xs rounded-lg gap-1.5',
+  md: 'h-9 px-4 text-sm rounded-lg gap-2',
+  lg: 'h-11 px-6 text-sm rounded-xl gap-2 font-semibold',
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -30,27 +31,18 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         disabled={disabled || loading}
         className={cn(
-          'inline-flex items-center justify-center font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2',
+          'inline-flex items-center justify-center font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-body',
           variantClasses[variant],
           sizeClasses[size],
-          (disabled || loading) && 'opacity-50 cursor-not-allowed pointer-events-none',
+          (disabled || loading) && 'opacity-40 cursor-not-allowed pointer-events-none',
           className
         )}
         {...props}
       >
         {loading && (
-          <svg
-            className="mr-2 h-4 w-4 animate-spin"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
+          <svg className="h-3.5 w-3.5 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-            />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
           </svg>
         )}
         {children}

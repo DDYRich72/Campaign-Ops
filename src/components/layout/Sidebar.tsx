@@ -44,6 +44,25 @@ const navItems = [
     ),
   },
   {
+    label: 'Profile',
+    href: '/profile',
+    icon: (
+      <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+        <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+      </svg>
+    ),
+  },
+  {
+    label: 'Billing',
+    href: '/billing',
+    icon: (
+      <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+        <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z" />
+        <path fillRule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clipRule="evenodd" />
+      </svg>
+    ),
+  },
+  {
     label: 'Settings',
     href: '/settings',
     icon: (
@@ -64,23 +83,26 @@ export function Sidebar() {
   const initials = (user?.firstName?.[0] ?? user?.emailAddresses[0]?.emailAddress?.[0] ?? 'U').toUpperCase();
 
   return (
-    <aside className="hidden lg:flex w-60 flex-shrink-0 flex-col bg-white border-r border-slate-200 h-screen sticky top-0">
+    <aside className="hidden lg:flex w-60 flex-shrink-0 flex-col bg-surface-sidebar border-r border-border-subtle h-screen sticky top-0 overflow-hidden">
+      {/* Ambient top glow */}
+      <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-violet-500/5 to-transparent pointer-events-none" />
+
       {/* Logo */}
-      <div className="flex items-center gap-2.5 px-5 h-16 border-b border-slate-200">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-600">
+      <div className="relative flex items-center gap-3 px-5 h-16 border-b border-border-subtle">
+        <div className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-violet-700 shadow-glow-violet">
           <svg className="h-4 w-4 text-white" viewBox="0 0 20 20" fill="currentColor">
             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
           </svg>
         </div>
         <div>
-          <p className="text-sm font-semibold text-slate-900 leading-tight">Campaign</p>
-          <p className="text-xs text-slate-500 leading-tight">Operator</p>
+          <p className="text-sm font-bold text-slate-100 leading-tight font-display tracking-wide">Campaign</p>
+          <p className="text-[10px] text-slate-500 leading-tight tracking-widest uppercase">Operator</p>
         </div>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-3 py-4 space-y-0.5">
-        {navItems.map((item) => {
+      <nav className="flex-1 px-2 py-4 space-y-0.5 overflow-y-auto">
+        {navItems.map((item, i) => {
           const isActive =
             item.href === '/campaigns/create'
               ? pathname === item.href
@@ -93,42 +115,47 @@ export function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
+              style={{ animationDelay: `${i * 40}ms` }}
               className={cn(
-                'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                'animate-in flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150',
                 isActive
-                  ? 'bg-violet-50 text-violet-700'
+                  ? 'nav-active text-violet-300'
                   : item.highlight
-                  ? 'text-violet-600 hover:bg-violet-50 hover:text-violet-700'
-                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                  ? 'text-violet-400 hover:bg-violet-500/10 hover:text-violet-300'
+                  : 'text-slate-500 hover:bg-surface-raised hover:text-slate-300'
               )}
             >
-              <span
-                className={cn(
-                  isActive ? 'text-violet-600' : item.highlight ? 'text-violet-500' : 'text-slate-400'
-                )}
-              >
+              <span className={cn(
+                isActive ? 'text-violet-400' : item.highlight ? 'text-violet-500' : 'text-slate-600'
+              )}>
                 {item.icon}
               </span>
-              {item.label}
+              <span>{item.label}</span>
+              {isActive && (
+                <span className="ml-auto h-1.5 w-1.5 rounded-full bg-violet-400 animate-glow-pulse" />
+              )}
             </Link>
           );
         })}
       </nav>
 
+      {/* Divider with gradient */}
+      <div className="h-px bg-gradient-to-r from-transparent via-border-subtle to-transparent mx-2" />
+
       {/* User area */}
-      <div className="border-t border-slate-200 p-3 space-y-1">
+      <div className="p-3 space-y-1">
         <div className="flex items-center gap-3 rounded-lg px-2 py-2">
-          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-violet-100 text-violet-700 text-sm font-semibold">
+          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-violet-500/15 text-violet-400 text-sm font-bold border border-violet-500/25">
             {initials}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="truncate text-sm font-medium text-slate-800">{displayName}</p>
-            <p className="truncate text-xs text-slate-500">{email}</p>
+            <p className="truncate text-xs font-semibold text-slate-300">{displayName}</p>
+            <p className="truncate text-[10px] text-slate-600">{email}</p>
           </div>
         </div>
         <button
           onClick={() => signOut({ redirectUrl: '/' })}
-          className="w-full flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-colors"
+          className="w-full flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-surface-raised hover:text-slate-400 transition-colors"
         >
           <svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clipRule="evenodd" />

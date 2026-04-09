@@ -2,10 +2,16 @@ import Link from 'next/link';
 
 export function FinalCTASection() {
   return (
-    <section className="py-20 lg:py-28 bg-slate-900">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <section className="py-20 lg:py-28 bg-surface-sidebar relative overflow-hidden">
+      {/* Ambient glow */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <div className="w-[600px] h-[300px] bg-violet-500/10 rounded-full blur-3xl" />
+      </div>
+      <div className="absolute inset-0 bg-dot-grid-faint pointer-events-none" />
+
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white tracking-tight leading-tight">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-100 tracking-tight leading-tight font-display">
             Your next campaign is{' '}
             <span className="text-gradient">5 minutes away</span>
           </h2>
@@ -15,7 +21,7 @@ export function FinalCTASection() {
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
               href="/sign-up"
-              className="inline-flex h-12 items-center justify-center rounded-xl bg-violet-600 hover:bg-violet-700 px-8 text-base font-semibold text-white shadow-sm transition-colors"
+              className="inline-flex h-12 items-center justify-center rounded-xl btn-shimmer px-8 text-base font-semibold text-white shadow-glow-violet transition-all"
             >
               Start for Free
               <svg className="ml-2 h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -23,13 +29,13 @@ export function FinalCTASection() {
               </svg>
             </Link>
             <Link
-              href="/campaigns/create"
-              className="inline-flex h-12 items-center justify-center rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 px-8 text-base font-semibold text-slate-300 transition-colors"
+              href="/sign-up"
+              className="inline-flex h-12 items-center justify-center rounded-xl bg-surface-raised hover:bg-border-subtle border border-border-subtle px-8 text-base font-semibold text-slate-300 transition-colors"
             >
               Create a Campaign →
             </Link>
           </div>
-          <p className="mt-5 text-xs text-slate-500">
+          <p className="mt-5 text-xs text-slate-600">
             No credit card required · Free to start · Cancel anytime
           </p>
         </div>

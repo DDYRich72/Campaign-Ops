@@ -1,132 +1,116 @@
+import Link from 'next/link';
+import { currentUser } from '@clerk/nextjs/server';
 import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
 import { Separator } from '@/components/ui/Separator';
 
 export const metadata = { title: 'Settings — Campaign Operator' };
 
-function SettingRow({ label, value, hint }: { label: string; value: string; hint?: string }) {
-  return (
-    <div className="flex items-start justify-between py-4">
-      <div>
-        <p className="text-sm font-medium text-slate-700">{label}</p>
-        {hint && <p className="text-xs text-slate-500 mt-0.5">{hint}</p>}
-      </div>
-      <div className="flex items-center gap-3 ml-6">
-        <span className="text-sm text-slate-600">{value}</span>
-        <button className="text-xs font-medium text-violet-600 hover:text-violet-800 transition-colors whitespace-nowrap">
-          Edit
-        </button>
-      </div>
-    </div>
-  );
-}
+export default async function SettingsPage() {
+  const user = await currentUser();
 
-export default function SettingsPage() {
+  const fullName = user?.fullName ?? user?.firstName ?? '—';
+  const email = user?.emailAddresses[0]?.emailAddress ?? '—';
+  const initials = (user?.firstName?.[0] ?? user?.emailAddresses[0]?.emailAddress?.[0] ?? 'U').toUpperCase();
+
   return (
     <div className="max-w-2xl space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">Settings</h1>
-        <p className="mt-1 text-sm text-slate-500">Manage your account and preferences.</p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-100">Settings</h1>
+          <p className="mt-1 text-sm text-slate-500">Manage your account and workspace.</p>
+        </div>
+        <span className="inline-flex items-center rounded-full bg-violet-500/15 border border-violet-500/25 px-2.5 py-0.5 text-xs font-semibold text-violet-400">
+          V1
+        </span>
       </div>
 
-      {/* Profile */}
+      {/* Account */}
       <Card>
-        <h2 className="text-base font-semibold text-slate-800 mb-1">Profile</h2>
-        <p className="text-sm text-slate-500 mb-4">Your personal information.</p>
+        <h2 className="text-base font-semibold text-slate-200 mb-1">Account</h2>
+        <p className="text-sm text-slate-500 mb-4">Your Clerk account details.</p>
         <Separator />
-        <div className="divide-y divide-slate-100">
-          <SettingRow label="Full Name" value="Alex Rivera" />
-          <SettingRow label="Email" value="alex@business.com" hint="Used for notifications and login" />
-          <SettingRow label="Password" value="••••••••••" />
+        <div className="mt-4 flex items-center gap-4">
+          <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-violet-500/15 text-violet-400 text-lg font-bold border border-violet-500/25">
+            {initials}
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-slate-200 truncate">{fullName}</p>
+            <p className="text-sm text-slate-500 truncate">{email}</p>
+          </div>
         </div>
-        <div className="mt-4 flex items-center gap-3">
-          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-violet-100 text-violet-700 text-xl font-bold">
-            A
-          </div>
-          <div>
-            <p className="text-sm font-medium text-slate-700">Profile photo</p>
-            <p className="text-xs text-slate-500">JPG, PNG or GIF, max 1MB</p>
-          </div>
-          <Button variant="secondary" size="sm" className="ml-auto">
-            Upload
-          </Button>
+        <div className="mt-4 text-xs text-slate-500">
+          To update your name, email, or password, visit your{' '}
+          <a
+            href="https://accounts.clerk.dev/user"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-violet-400 hover:text-violet-300 transition-colors"
+          >
+            Clerk account settings ↗
+          </a>
         </div>
       </Card>
 
-      {/* Business Info */}
+      {/* Business Profile */}
       <Card>
-        <h2 className="text-base font-semibold text-slate-800 mb-1">Business Info</h2>
-        <p className="text-sm text-slate-500 mb-4">Used as defaults in your campaigns.</p>
+        <h2 className="text-base font-semibold text-slate-200 mb-1">Business Profile</h2>
+        <p className="text-sm text-slate-500 mb-4">
+          Pre-fills your campaigns so you don&apos;t re-enter the same details every time.
+        </p>
         <Separator />
-        <div className="divide-y divide-slate-100">
-          <SettingRow label="Business Name" value="—" hint="Pre-fill campaign forms" />
-          <SettingRow label="Industry" value="—" />
-          <SettingRow label="Default Brand Voice" value="—" />
-          <SettingRow label="Website" value="—" />
+        <div className="mt-4">
+          <Link
+            href="/profile"
+            className="inline-flex items-center gap-2 rounded-lg border border-border-subtle bg-surface-raised px-4 py-2.5 text-sm font-medium text-slate-300 hover:bg-border-subtle hover:border-border transition-colors"
+          >
+            <svg className="h-4 w-4 text-slate-500" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+            </svg>
+            Edit Business Profile
+          </Link>
         </div>
       </Card>
 
-      {/* Notifications */}
+      {/* Quick Links */}
       <Card>
-        <h2 className="text-base font-semibold text-slate-800 mb-1">Notifications</h2>
-        <p className="text-sm text-slate-500 mb-4">Choose when to be notified.</p>
+        <h2 className="text-base font-semibold text-slate-200 mb-1">Quick Links</h2>
+        <p className="text-sm text-slate-500 mb-4">Jump to key areas of the app.</p>
         <Separator />
-        <div className="divide-y divide-slate-100">
+        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
           {[
-            { label: 'Campaign generated', hint: 'When AI finishes building your campaign', enabled: true },
-            { label: 'New assets ready', hint: 'When content assets are available', enabled: true },
-            { label: 'Product updates', hint: 'New features and improvements', enabled: false },
-          ].map((item) => (
-            <div key={item.label} className="flex items-center justify-between py-4">
-              <div>
-                <p className="text-sm font-medium text-slate-700">{item.label}</p>
-                <p className="text-xs text-slate-500 mt-0.5">{item.hint}</p>
-              </div>
-              <div
-                className={`relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${
-                  item.enabled ? 'bg-violet-600' : 'bg-slate-200'
-                }`}
-              >
-                <span
-                  className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
-                    item.enabled ? 'translate-x-4' : 'translate-x-0'
-                  }`}
-                />
-              </div>
-            </div>
+            { label: 'Campaigns', href: '/campaigns', description: 'View and manage all campaigns' },
+            { label: 'Create Campaign', href: '/campaigns/create', description: 'Start a new AI campaign' },
+            { label: 'Dashboard', href: '/dashboard', description: 'See your campaign overview' },
+            { label: 'Business Profile', href: '/profile', description: 'Update your business details' },
+          ].map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="flex flex-col rounded-lg border border-border-subtle p-3 hover:border-violet-500/40 hover:bg-violet-500/5 transition-colors group"
+            >
+              <span className="text-sm font-medium text-slate-300 group-hover:text-violet-300 transition-colors">
+                {link.label}
+              </span>
+              <span className="text-xs text-slate-500 mt-0.5">{link.description}</span>
+            </Link>
           ))}
         </div>
       </Card>
 
-      {/* Billing */}
+      {/* App info */}
       <Card>
-        <h2 className="text-base font-semibold text-slate-800 mb-1">Billing</h2>
-        <p className="text-sm text-slate-500 mb-4">Your plan and payment details.</p>
+        <h2 className="text-base font-semibold text-slate-200 mb-1">About</h2>
         <Separator />
-        <div className="mt-4 flex items-center justify-between rounded-lg bg-slate-50 border border-slate-200 px-4 py-3">
-          <div>
-            <div className="flex items-center gap-2">
-              <p className="text-sm font-semibold text-slate-800">Free Plan</p>
-              <span className="rounded-full bg-violet-100 px-2 py-0.5 text-xs font-medium text-violet-700">Current</span>
-            </div>
-            <p className="text-xs text-slate-500 mt-0.5">3 campaigns · 20 assets · 5 channels</p>
+        <dl className="mt-4 divide-y divide-border-subtle">
+          <div className="py-2.5 flex items-center justify-between">
+            <dt className="text-sm text-slate-500">Version</dt>
+            <dd className="text-sm font-medium text-slate-300">V1</dd>
           </div>
-          <Button variant="primary" size="sm">
-            Upgrade
-          </Button>
-        </div>
-      </Card>
-
-      {/* Danger zone */}
-      <Card>
-        <h2 className="text-base font-semibold text-red-600 mb-1">Danger Zone</h2>
-        <p className="text-sm text-slate-500 mb-4">Irreversible actions — proceed with caution.</p>
-        <Separator />
-        <div className="mt-4">
-          <Button variant="destructive" size="sm">
-            Delete Account
-          </Button>
-        </div>
+          <div className="py-2.5 flex items-center justify-between">
+            <dt className="text-sm text-slate-500">Stack</dt>
+            <dd className="text-sm text-slate-500">Next.js · Clerk · Supabase · OpenAI</dd>
+          </div>
+        </dl>
       </Card>
     </div>
   );
