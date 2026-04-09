@@ -111,6 +111,7 @@ export function getPlan(key: PlanKey | null | undefined): Plan | null {
 }
 
 export function getLimits(key: PlanKey | null | undefined): PlanLimits {
+  if (!key) return FREE_LIMITS;
   return PLANS[key]?.limits ?? FREE_LIMITS;
 }
 
