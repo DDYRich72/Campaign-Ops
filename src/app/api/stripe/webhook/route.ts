@@ -3,9 +3,6 @@ import { stripe } from '@/lib/stripe';
 import { createServerClient } from '@/lib/supabase/server';
 import type Stripe from 'stripe';
 
-// Disable body parsing — Stripe needs the raw body to verify signature
-export const config = { api: { bodyParser: false } };
-
 async function upsertSubscription(
   supabase: ReturnType<typeof createServerClient>,
   {
