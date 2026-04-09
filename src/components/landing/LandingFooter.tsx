@@ -68,6 +68,14 @@ export function LandingFooter() {
           <p className="text-xs text-slate-600">
             Built for small businesses that mean business.
           </p>
+          <a
+            href="https://www.rls-solutions.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-slate-500 hover:text-slate-300 transition-colors"
+          >
+            Powered by RLS-Solutions
+          </a>
         </div>
       </div>
     </footer>

@@ -133,6 +133,7 @@ export default function PrivacyPage() {
           <div className="flex items-center gap-4 text-xs text-slate-400">
             <Link href="/terms" className="hover:text-slate-700 transition-colors">Terms of Service</Link>
             <Link href="/cookies" className="hover:text-slate-700 transition-colors">Cookie Policy</Link>
+            <a href="https://www.rls-solutions.com/" target="_blank" rel="noopener noreferrer" className="hover:text-slate-700 transition-colors">Powered by RLS-Solutions</a>
           </div>
         </div>
       </footer>

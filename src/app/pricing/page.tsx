@@ -165,6 +165,20 @@ export default function PricingPage() {
           </div>
         </div>
       </main>
+
+      <footer className="border-t border-slate-200 mt-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-xs text-slate-400">&copy; {new Date().getFullYear()} Campaign Operator. All rights reserved.</p>
+          <a
+            href="https://www.rls-solutions.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-slate-400 hover:text-slate-700 transition-colors"
+          >
+            Powered by RLS-Solutions
+          </a>
+        </div>
+      </footer>
     </div>
   );
 }

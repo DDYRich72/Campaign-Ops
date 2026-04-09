@@ -132,6 +132,7 @@ export default function CookiesPage() {
           <div className="flex items-center gap-4 text-xs text-slate-400">
             <Link href="/privacy" className="hover:text-slate-700 transition-colors">Privacy Policy</Link>
             <Link href="/terms" className="hover:text-slate-700 transition-colors">Terms of Service</Link>
+            <a href="https://www.rls-solutions.com/" target="_blank" rel="noopener noreferrer" className="hover:text-slate-700 transition-colors">Powered by RLS-Solutions</a>
           </div>
         </div>
       </footer>
