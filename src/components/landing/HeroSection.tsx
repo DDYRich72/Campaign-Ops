@@ -117,7 +117,7 @@ export function HeroSection() {
                   </div>
                   <div className="flex-1 min-w-0 hidden sm:block">
                     <p className="text-[10px] font-semibold text-cyan-400 uppercase tracking-widest mb-0.5">Messaging Angle</p>
-                    <p className="text-[11px] text-slate-300 leading-relaxed truncate">Stop waiting for the "right time." Summer is here — and so is your last excuse.</p>
+                    <p className="text-[11px] text-slate-300 leading-relaxed truncate">Stop waiting for the &ldquo;right time.&rdquo; Summer is here — and so is your last excuse.</p>
                   </div>
                 </div>
 
@@ -157,7 +157,7 @@ export function HeroSection() {
                       <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium flex-shrink-0 ${item.platformColor}`}>{item.platform}</span>
                       <div className="flex-1 min-w-0">
                         <p className="text-[11px] font-semibold text-slate-200 truncate">{item.topic}</p>
-                        <p className="text-[10px] text-slate-500 truncate italic">"{item.hook}"</p>
+                        <p className="text-[10px] text-slate-500 truncate italic">&ldquo;{item.hook}&rdquo;</p>
                       </div>
                       <span className="text-[10px] text-slate-600 flex-shrink-0 hidden sm:block">{item.type}</span>
                     </div>

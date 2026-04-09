@@ -4,7 +4,7 @@ import { Separator } from '@/components/ui/Separator';
 import { CheckoutButton } from '@/components/billing/CheckoutButton';
 import { ManageBillingButton } from '@/components/billing/ManageBillingButton';
 import { getSubscription, getUsageCounters } from '@/lib/subscription';
-import { getPlan, getLimits, PLAN_ORDER, PLANS, FREE_LIMITS } from '@/lib/plans';
+import { getPlan, getLimits, PLAN_ORDER, PLANS } from '@/lib/plans';
 import type { PlanKey } from '@/lib/plans';
 
 export const metadata = { title: 'Billing — Campaign Operator' };
