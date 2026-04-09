@@ -1,5 +1,7 @@
 import Link from 'next/link';
+import { auth } from '@clerk/nextjs/server';
 import { PLANS, PLAN_ORDER, FREE_LIMITS } from '@/lib/plans';
+import { CheckoutButton } from '@/components/billing/CheckoutButton';
 
 export const metadata = { title: 'Pricing — Campaign Operator' };
 
@@ -11,7 +13,8 @@ function CheckIcon() {
   );
 }
 
-export default function PricingPage() {
+export default async function PricingPage() {
+  const { userId } = await auth();
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
@@ -82,16 +85,28 @@ export default function PricingPage() {
                   <p className="mt-3 text-sm text-slate-500 leading-relaxed">{plan.description}</p>
                 </div>
 
-                <Link
-                  href="/sign-up"
-                  className={`w-full inline-flex items-center justify-center rounded-xl py-2.5 text-sm font-semibold transition-colors ${
-                    plan.highlighted
-                      ? 'bg-violet-600 text-white hover:bg-violet-700'
-                      : 'border border-slate-200 bg-white text-slate-800 hover:bg-slate-50'
-                  }`}
-                >
-                  Get started with {plan.label}
-                </Link>
+                {userId ? (
+                  <CheckoutButton
+                    planKey={key}
+                    label={`Get started with ${plan.label}`}
+                    className={`w-full inline-flex items-center justify-center rounded-xl py-2.5 text-sm font-semibold transition-colors disabled:opacity-60 ${
+                      plan.highlighted
+                        ? 'bg-violet-600 text-white hover:bg-violet-700'
+                        : 'border border-slate-200 bg-white text-slate-800 hover:bg-slate-50'
+                    }`}
+                  />
+                ) : (
+                  <Link
+                    href="/sign-up"
+                    className={`w-full inline-flex items-center justify-center rounded-xl py-2.5 text-sm font-semibold transition-colors ${
+                      plan.highlighted
+                        ? 'bg-violet-600 text-white hover:bg-violet-700'
+                        : 'border border-slate-200 bg-white text-slate-800 hover:bg-slate-50'
+                    }`}
+                  >
+                    Get started with {plan.label}
+                  </Link>
+                )}
 
                 <div>
                   <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">What&apos;s included</p>
