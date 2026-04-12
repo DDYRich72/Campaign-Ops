@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { createServerClient } from '@/lib/supabase/server';
 import { checkLimit, incrementUsage } from '@/lib/subscription';
 import { openai, GENERATION_MODEL } from '@/lib/openai';
+import { generateCampaignImages } from '@/lib/image-generation';
 import type {
   CampaignRow,
   CampaignStrategy,
@@ -395,10 +396,33 @@ export async function generateFullContentAction(
     return { success: false, error: 'AI response was incomplete. Please try again.' };
   }
 
+  // Generate images for each content item
+  console.log('Starting image generation for campaign:', campaignId);
+  const imageResults = await generateCampaignImages({
+    campaignId,
+    clerkUserId: userId,
+    contentItems: parsed.full_content.map((item: FullContentItem) => ({
+      day: item.day,
+      platform: item.platform,
+      visual_prompt: item.visual_prompt,
+    })),
+  });
+
+  // Merge image URLs into full content
+  const contentWithImages: (FullContentItem & { image_url?: string; image_error?: string })[] = 
+    parsed.full_content.map((item: FullContentItem) => {
+      const imageResult = imageResults.find(r => r.day === item.day && r.platform === item.platform);
+      return {
+        ...item,
+        image_url: imageResult?.image_url,
+        image_error: imageResult?.error || undefined,
+      };
+    });
+
   const { error: saveError } = await supabase
     .from('campaigns')
     .update({
-      full_content_json: parsed.full_content,
+      full_content_json: contentWithImages,
       content_generation_status: 'done',
       content_generated_at: new Date().toISOString(),
     })

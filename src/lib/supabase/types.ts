@@ -66,6 +66,8 @@ export interface FullContentItem {
   hashtags: string[];
   visual_prompt: string;
   notes: string | null;
+  image_url?: string; // Generated image URL from DALL-E 3
+  image_error?: string; // Error message if image generation failed
 }
 
 export interface LandingPageCopy {
