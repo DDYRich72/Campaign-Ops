@@ -9,24 +9,26 @@ interface CardProps {
 
 const paddingClasses = {
   none:  '',
-  sm:    'p-4',
-  md:    'p-5',
+  sm:    'p-5',
+  md:    'p-6',
   lg:    'p-8',
 };
 
+// Accent prop kept for backward compat; on paper we render a single ink hairline
+// at the top regardless of color, since the editorial language uses one accent.
 const accentClasses = {
   none:    '',
-  violet:  'card-accent-violet',
-  cyan:    'card-accent-cyan',
-  emerald: 'card-accent-emerald',
-  amber:   'card-accent-amber',
+  violet:  'border-t-[1.5px] border-t-ink',
+  cyan:    'border-t-[1.5px] border-t-ink',
+  emerald: 'border-t-[1.5px] border-t-ink',
+  amber:   'border-t-[1.5px] border-t-ink',
 };
 
 export function Card({ children, className, padding = 'md', accent = 'none' }: CardProps) {
   return (
     <div
       className={cn(
-        'bg-surface-card rounded-xl border border-border-subtle shadow-card transition-colors hover:border-border',
+        'bg-card border border-rule rounded-[3px] transition-colors',
         accentClasses[accent],
         paddingClasses[padding],
         className
@@ -39,7 +41,7 @@ export function Card({ children, className, padding = 'md', accent = 'none' }: C
 
 export function CardHeader({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={cn('flex items-center justify-between mb-4', className)}>
+    <div className={cn('flex items-center justify-between mb-5', className)}>
       {children}
     </div>
   );
@@ -47,7 +49,7 @@ export function CardHeader({ children, className }: { children: React.ReactNode;
 
 export function CardTitle({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <h3 className={cn('text-sm font-semibold text-slate-300 font-display tracking-wide', className)}>
+    <h3 className={cn('font-display text-[17px] font-medium text-ink tracking-tight', className)}>
       {children}
     </h3>
   );

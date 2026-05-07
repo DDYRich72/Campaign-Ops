@@ -31,11 +31,12 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
             ref={ref}
             id={selectId}
             className={cn(
-              'w-full appearance-none rounded-lg border bg-surface-raised px-3 py-2.5 pr-8 text-sm text-slate-200 transition-colors',
-              'focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent',
+              'w-full appearance-none bg-paper border-b text-[14px] text-ink',
+              'px-1 py-2.5 pr-8 rounded-none transition-colors',
+              'focus:outline-none focus:border-ink',
               error
-                ? 'border-red-500/60 focus:ring-red-500'
-                : 'border-border-subtle hover:border-border',
+                ? 'border-oxblood'
+                : 'border-rule hover:border-ink/40',
               className
             )}
             {...props}
@@ -51,8 +52,8 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
               </option>
             ))}
           </select>
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2.5">
-            <svg className="h-4 w-4 text-slate-400" viewBox="0 0 20 20" fill="currentColor">
+          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-1">
+            <svg className="h-3 w-3 text-ink-faint" viewBox="0 0 20 20" fill="currentColor">
               <path
                 fillRule="evenodd"
                 d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
@@ -61,8 +62,8 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
             </svg>
           </div>
         </div>
-        {error && <p className="mt-1.5 text-xs text-red-400">{error}</p>}
-        {hint && !error && <p className="mt-1.5 text-xs text-slate-600">{hint}</p>}
+        {error && <p className="mt-2 text-[11px] text-oxblood">{error}</p>}
+        {hint && !error && <p className="mt-2 text-[11px] text-ink-faint">{hint}</p>}
       </div>
     );
   }

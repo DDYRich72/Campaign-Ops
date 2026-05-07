@@ -1,12 +1,12 @@
 import Link from 'next/link';
 import { auth, currentUser } from '@clerk/nextjs/server';
 import { createServerClient } from '@/lib/supabase/server';
+import { getPlanKey } from '@/lib/subscription';
 import { CampaignRow } from '@/components/dashboard/CampaignRow';
 import { EmptyState } from '@/components/dashboard/EmptyState';
 import { OnboardingChecklist } from '@/components/dashboard/OnboardingChecklist';
-import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Card, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
 import type { CampaignRow as CampaignRowType, BusinessProfileRow } from '@/lib/supabase/types';
 import type { Campaign } from '@/data/mock';
 
@@ -44,17 +44,27 @@ export default async function DashboardPage() {
     hour >= 12 && hour < 17 ? 'Good afternoon' :
     'Good evening';
 
+  const today = new Date().toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  });
+
   let campaigns: Campaign[] = [];
   let rawRows: CampaignRowType[] = [];
   let profile: BusinessProfileRow | null = null;
   let dbError = false;
+  let planKey: string | null = null;
 
   try {
     const supabase = createServerClient();
-    const [campaignsRes, profileRes] = await Promise.all([
+    const [campaignsRes, profileRes, fetchedPlanKey] = await Promise.all([
       supabase.from('campaigns').select('*').eq('clerk_user_id', userId!).order('updated_at', { ascending: false }),
       supabase.from('business_profiles').select('*').eq('clerk_user_id', userId!).single(),
+      getPlanKey(userId!),
     ]);
+    planKey = fetchedPlanKey;
     if (campaignsRes.error) throw campaignsRes.error;
     rawRows = (campaignsRes.data ?? []) as CampaignRowType[];
     campaigns = rawRows.map(toUICampaign);
@@ -75,267 +85,264 @@ export default async function DashboardPage() {
   });
 
   return (
-    <div className="space-y-8">
-      {/* Welcome header */}
-      <div className="animate-in flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-        <div>
-          <p className="text-xs font-medium text-slate-600 uppercase tracking-widest mb-1">Mission Control</p>
-          <h1 className="text-3xl font-bold font-display text-gradient leading-tight">
-            {greeting}, {firstName}
-          </h1>
-          <p className="mt-1.5 text-sm text-slate-500">
-            Here&apos;s what&apos;s happening with your campaigns today.
-          </p>
+    <div className="space-y-14">
+      {/* Editorial masthead */}
+      <header className="animate-in">
+        <div className="flex items-baseline justify-between border-b border-rule pb-3 mb-10">
+          <p className="editorial-eyebrow">The daily brief</p>
+          <p className="editorial-eyebrow hidden sm:block">{today}</p>
+          <p className="editorial-eyebrow">No. {String(campaigns.length).padStart(3, '0')}</p>
         </div>
-        <Link href="/campaigns/create" className="flex-shrink-0">
-          <Button size="md">
-            <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
-            </svg>
-            New Campaign
-          </Button>
-        </Link>
-      </div>
 
-      {/* DB error banner */}
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+          <div className="max-w-2xl">
+            <h1 className="font-display text-[44px] sm:text-[58px] leading-[1.0] text-ink tracking-[-0.02em]">
+              {greeting},
+              <br />
+              <span className="display-italic">{firstName}</span>.
+            </h1>
+            <p className="mt-6 text-[15px] text-ink-soft leading-relaxed">
+              A quiet survey of your campaigns and what awaits your attention.
+            </p>
+          </div>
+          <Link href="/campaigns/create" className="flex-shrink-0">
+            <Button size="md">Begin a new campaign</Button>
+          </Link>
+        </div>
+      </header>
+
+      {/* DB error notice */}
       {dbError && (
-        <div className="rounded-lg bg-amber-500/8 border border-amber-500/25 px-4 py-3 flex items-center gap-2 text-sm text-amber-400">
-          <svg className="h-4 w-4 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-          </svg>
-          Could not load campaigns from the database. Check your Supabase environment variables.
+        <div className="border border-oxblood bg-oxblood-tint px-5 py-4 flex items-baseline gap-3 text-[13px] text-oxblood">
+          <span className="editorial-eyebrow text-oxblood">Notice</span>
+          <span className="text-ink">
+            Could not load campaigns from the database. Check your Supabase environment variables.
+          </span>
         </div>
       )}
 
-      {!dbError && <OnboardingChecklist profile={profile} campaigns={rawRows} />}
-
-      {/* Stat cards */}
-      <div className="animate-in delay-1 grid grid-cols-2 xl:grid-cols-4 gap-4">
-        {/* Total */}
-        <div className="bg-surface-card rounded-xl border border-border-subtle card-accent-violet p-5 shadow-card">
-          <p className="text-[10px] font-semibold text-slate-600 uppercase tracking-widest">Total</p>
-          <p className="mt-3 text-4xl font-bold font-display text-violet-400" style={{ textShadow: '0 0 30px rgba(168,85,247,0.5)' }}>
-            {campaigns.length}
-          </p>
-          <p className="mt-2 text-xs text-slate-600">campaigns created</p>
+      {/* Free-tier upgrade card — quiet, editorial */}
+      {!planKey && !dbError && (
+        <div className="animate-in delay-1 border border-ink bg-card px-7 py-6 flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+          <div>
+            <p className="editorial-eyebrow mb-2">A note on your subscription</p>
+            <p className="font-display text-[18px] text-ink tracking-tight">
+              You&rsquo;re on the <span className="display-italic">complimentary</span> plan.
+            </p>
+            <p className="text-[13px] text-ink-soft mt-2 leading-relaxed max-w-xl">
+              Limited to one campaign, two strategy generations, and one full content draft. Upgrade to unlock the full press.
+            </p>
+          </div>
+          <Link
+            href="/pricing"
+            className="flex-shrink-0 inline-flex h-10 items-center bg-ink px-5 text-[13px] text-paper hover:bg-black transition-colors rounded-[3px]"
+          >
+            Upgrade plan →
+          </Link>
         </div>
+      )}
 
-        {/* Active */}
-        <div className="bg-surface-card rounded-xl border border-border-subtle card-accent-emerald p-5 shadow-card">
-          <p className="text-[10px] font-semibold text-slate-600 uppercase tracking-widest">Active</p>
-          <p className="mt-3 text-4xl font-bold font-display text-emerald-400" style={{ textShadow: '0 0 30px rgba(16,185,129,0.5)' }}>
-            {activeCampaigns.length}
-          </p>
-          <p className="mt-2 text-xs text-slate-600">currently running</p>
+      {!dbError && (
+        <div className="animate-in delay-1">
+          <OnboardingChecklist profile={profile} campaigns={rawRows} />
         </div>
+      )}
 
-        {/* Ready */}
-        <div className="bg-surface-card rounded-xl border border-border-subtle card-accent-cyan p-5 shadow-card">
-          <p className="text-[10px] font-semibold text-slate-600 uppercase tracking-widest">Ready</p>
-          <p className="mt-3 text-4xl font-bold font-display text-cyan-400" style={{ textShadow: '0 0 30px rgba(34,211,238,0.5)' }}>
-            {readyCampaigns.length}
-          </p>
-          <p className="mt-2 text-xs text-slate-600">fully generated</p>
+      {/* Stat row — editorial display numerals on rule grid */}
+      <section className="animate-in delay-2">
+        <div className="flex items-baseline justify-between border-b border-ink pb-2 mb-0">
+          <p className="editorial-eyebrow">By the numbers</p>
+          <p className="editorial-eyebrow hidden sm:block">A summary of works in progress</p>
         </div>
-
-        {/* Drafts */}
-        <div className="bg-surface-card rounded-xl border border-border-subtle card-accent-amber p-5 shadow-card">
-          <p className="text-[10px] font-semibold text-slate-600 uppercase tracking-widest">Drafts</p>
-          <p className="mt-3 text-4xl font-bold font-display text-amber-400" style={{ textShadow: '0 0 30px rgba(245,158,11,0.5)' }}>
-            {draftCampaigns.length}
-          </p>
-          <p className="mt-2 text-xs text-slate-600">in progress</p>
-        </div>
-      </div>
-
-      <div className="animate-in delay-2 grid grid-cols-1 xl:grid-cols-3 gap-6">
-        {/* Recent campaigns table */}
-        <div className="xl:col-span-2">
-          <Card padding="none">
-            <div className="px-6 pt-5 pb-3 flex items-center justify-between">
-              <CardTitle>Recent Campaigns</CardTitle>
-              <Link href="/campaigns" className="text-[11px] font-semibold text-cyan-500 hover:text-cyan-300 transition-colors tracking-wide uppercase">
-                View all →
-              </Link>
+        <div className="grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-rule border-b border-rule">
+          {[
+            { label: 'Total',   value: campaigns.length,         note: 'campaigns drafted' },
+            { label: 'Active',  value: activeCampaigns.length,   note: 'currently running' },
+            { label: 'Ready',   value: readyCampaigns.length,    note: 'awaiting launch' },
+            { label: 'Drafts',  value: draftCampaigns.length,    note: 'in progress' },
+          ].map((stat, i) => (
+            <div key={stat.label} className={`px-7 py-9 ${i % 2 === 1 ? 'border-l border-rule lg:border-l-0' : ''} ${i >= 2 ? 'lg:border-l-0' : ''}`}>
+              <p className="editorial-eyebrow">{stat.label}</p>
+              <p className="stat-numeral mt-5 text-[64px] text-ink">{stat.value}</p>
+              <p className="mt-3 text-[12px] text-ink-faint italic">{stat.note}</p>
             </div>
+          ))}
+        </div>
+      </section>
 
-            {campaigns.length === 0 && !dbError ? (
-              <div className="px-6 pb-6">
-                <EmptyState
-                  icon={
-                    <svg className="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
-                      <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1z" />
-                    </svg>
-                  }
-                  title="No campaigns yet"
-                  description="Create your first campaign to get started."
-                  action={
-                    <Link href="/campaigns/create">
-                      <Button size="sm">Create Campaign</Button>
-                    </Link>
-                  }
-                />
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-t border-border-subtle">
-                      <th className="py-2.5 pl-6 pr-3 text-left text-[10px] font-semibold text-slate-600 uppercase tracking-widest">Campaign</th>
-                      <th className="px-3 py-2.5 text-left text-[10px] font-semibold text-slate-600 uppercase tracking-widest hidden sm:table-cell">Status</th>
-                      <th className="px-3 py-2.5 text-left text-[10px] font-semibold text-slate-600 uppercase tracking-widest hidden md:table-cell">Channels</th>
-                      <th className="px-3 py-2.5 text-left text-[10px] font-semibold text-slate-600 uppercase tracking-widest hidden lg:table-cell">Assets</th>
-                      <th className="px-3 py-2.5 text-left text-[10px] font-semibold text-slate-600 uppercase tracking-widest hidden lg:table-cell">Updated</th>
-                      <th className="py-2.5 pl-3 pr-6" />
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {campaigns.slice(0, 5).map((campaign) => (
-                      <CampaignRow key={campaign.id} campaign={campaign} />
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </Card>
+      <div className="animate-in delay-3 grid grid-cols-1 xl:grid-cols-3 gap-10">
+        {/* Recent campaigns */}
+        <div className="xl:col-span-2">
+          <div className="flex items-baseline justify-between border-b border-ink pb-3 mb-0">
+            <p className="editorial-eyebrow">Recent campaigns</p>
+            <Link href="/campaigns" className="text-[12px] text-ink-soft hover:text-ink transition-colors">
+              View all →
+            </Link>
+          </div>
+
+          {campaigns.length === 0 && !dbError ? (
+            <div className="pt-8">
+              <EmptyState
+                title="No campaigns yet"
+                description="Begin your first campaign to see it appear here."
+                action={
+                  <Link href="/campaigns/create">
+                    <Button size="md">Begin a campaign</Button>
+                  </Link>
+                }
+              />
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="sr-only">
+                  <tr>
+                    <th>Campaign</th>
+                    <th>Status</th>
+                    <th>Channels</th>
+                    <th>Assets</th>
+                    <th>Updated</th>
+                    <th />
+                  </tr>
+                </thead>
+                <tbody>
+                  {campaigns.slice(0, 5).map((campaign) => (
+                    <CampaignRow key={campaign.id} campaign={campaign} />
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
 
-        {/* Right column */}
-        <div className="space-y-5">
+        {/* Right column — quiet attention list */}
+        <aside className="space-y-10">
           {campaignsWithPendingItems.length > 0 && (
-            <Card accent="cyan">
-              <CardHeader>
-                <CardTitle>Ready to Post</CardTitle>
-                <Badge variant="info" dot>{campaignsWithPendingItems.length}</Badge>
-              </CardHeader>
-              <div className="space-y-2">
+            <section>
+              <div className="flex items-baseline justify-between border-b border-ink pb-3 mb-0">
+                <p className="editorial-eyebrow">Awaiting publication</p>
+                <p className="text-[11px] text-ink-faint tabular-nums">{campaignsWithPendingItems.length}</p>
+              </div>
+              <div className="divide-y divide-rule">
                 {campaignsWithPendingItems.map((row) => {
                   const stateMap = row.content_publish_state_json ?? {};
                   const readyCount = Object.values(stateMap).filter((s) => s.status === 'ready').length;
                   const scheduledCount = Object.values(stateMap).filter((s) => s.status === 'scheduled').length;
                   return (
-                    <Link key={row.id} href={`/campaigns/${row.id}`} className="flex items-center justify-between rounded-lg border border-cyan-500/15 bg-cyan-500/5 p-3 hover:bg-cyan-500/10 transition-colors">
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium text-slate-200 truncate">{row.name}</p>
-                        <p className="text-xs text-slate-600 mt-0.5">
+                    <Link key={row.id} href={`/campaigns/${row.id}`} className="flex items-baseline justify-between py-4 hover:bg-paper transition-colors">
+                      <div className="min-w-0 flex-1 pr-3">
+                        <p className="font-display text-[15px] text-ink truncate tracking-tight">{row.name}</p>
+                        <p className="text-[11px] text-ink-faint mt-1 italic">
                           {readyCount > 0 && `${readyCount} ready`}
                           {readyCount > 0 && scheduledCount > 0 && ' · '}
                           {scheduledCount > 0 && `${scheduledCount} scheduled`}
                         </p>
                       </div>
-                      <span className="ml-3 text-xs font-semibold text-cyan-500 flex-shrink-0">View →</span>
+                      <span className="text-[12px] text-ink-soft flex-shrink-0">→</span>
                     </Link>
                   );
                 })}
               </div>
-            </Card>
+            </section>
           )}
 
           {activeCampaigns.length > 0 && (
-            <Card accent="emerald">
-              <CardHeader>
-                <CardTitle>Active Now</CardTitle>
-                <Badge variant="success" dot>{activeCampaigns.length} running</Badge>
-              </CardHeader>
-              <div className="space-y-2">
+            <section>
+              <div className="flex items-baseline justify-between border-b border-ink pb-3 mb-0">
+                <p className="editorial-eyebrow">Active</p>
+                <p className="text-[11px] text-ink-faint tabular-nums">{activeCampaigns.length}</p>
+              </div>
+              <div className="divide-y divide-rule">
                 {activeCampaigns.map((campaign) => (
-                  <Link key={campaign.id} href={`/campaigns/${campaign.id}`} className="flex items-start gap-3 rounded-lg bg-emerald-500/5 border border-emerald-500/15 p-3 hover:bg-emerald-500/10 transition-colors">
-                    <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-emerald-500/10">
-                      <div className="h-2 w-2 rounded-full bg-emerald-400 animate-glow-pulse" />
+                  <Link key={campaign.id} href={`/campaigns/${campaign.id}`} className="flex items-baseline justify-between py-4 hover:bg-paper transition-colors">
+                    <div className="min-w-0 flex-1 pr-3">
+                      <p className="font-display text-[15px] text-ink truncate tracking-tight">{campaign.name}</p>
+                      <p className="text-[11px] text-ink-faint mt-1 tabular-nums">{campaign.assetCount} assets</p>
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-slate-200 truncate">{campaign.name}</p>
-                      <p className="text-xs text-slate-600">{campaign.assetCount} assets</p>
-                    </div>
+                    <span className="text-[12px] text-ink-soft flex-shrink-0">→</span>
                   </Link>
                 ))}
               </div>
-            </Card>
+            </section>
           )}
 
           {readyCampaigns.length > 0 && (
-            <Card accent="violet">
-              <CardHeader>
-                <CardTitle>Ready to Launch</CardTitle>
-                <Badge variant="info" dot>{readyCampaigns.length}</Badge>
-              </CardHeader>
-              <div className="space-y-2">
+            <section>
+              <div className="flex items-baseline justify-between border-b border-ink pb-3 mb-0">
+                <p className="editorial-eyebrow">Ready to launch</p>
+                <p className="text-[11px] text-ink-faint tabular-nums">{readyCampaigns.length}</p>
+              </div>
+              <div className="divide-y divide-rule">
                 {readyCampaigns.map((campaign) => (
-                  <Link key={campaign.id} href={`/campaigns/${campaign.id}`} className="flex items-center justify-between rounded-lg border border-violet-500/15 bg-violet-500/5 p-3 hover:bg-violet-500/10 transition-colors">
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-slate-200 truncate">{campaign.name}</p>
-                      <p className="text-xs text-slate-600">{campaign.businessName}</p>
+                  <Link key={campaign.id} href={`/campaigns/${campaign.id}`} className="flex items-baseline justify-between py-4 hover:bg-paper transition-colors">
+                    <div className="min-w-0 flex-1 pr-3">
+                      <p className="font-display text-[15px] text-ink truncate tracking-tight">{campaign.name}</p>
+                      <p className="text-[11px] text-ink-faint mt-1 italic truncate">{campaign.businessName}</p>
                     </div>
-                    <span className="ml-3 text-xs font-semibold text-violet-400 flex-shrink-0">Launch →</span>
+                    <span className="text-[12px] text-ink-soft flex-shrink-0">Launch →</span>
                   </Link>
                 ))}
               </div>
-            </Card>
+            </section>
           )}
 
           {draftCampaigns.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Drafts</CardTitle>
-                <Badge variant="default">{draftCampaigns.length}</Badge>
-              </CardHeader>
-              <div className="space-y-2">
+            <section>
+              <div className="flex items-baseline justify-between border-b border-rule pb-3 mb-0">
+                <p className="editorial-eyebrow">Drafts</p>
+                <p className="text-[11px] text-ink-faint tabular-nums">{draftCampaigns.length}</p>
+              </div>
+              <div className="divide-y divide-rule">
                 {draftCampaigns.map((campaign) => (
-                  <Link key={campaign.id} href={`/campaigns/${campaign.id}`} className="flex items-center justify-between rounded-lg border border-dashed border-border-DEFAULT p-3 hover:bg-surface-raised transition-colors">
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-slate-300 truncate">{campaign.name}</p>
-                      <p className="text-xs text-slate-600">{campaign.businessName}</p>
+                  <Link key={campaign.id} href={`/campaigns/${campaign.id}`} className="flex items-baseline justify-between py-4 hover:bg-paper transition-colors">
+                    <div className="min-w-0 flex-1 pr-3">
+                      <p className="font-display text-[15px] text-ink truncate tracking-tight">{campaign.name}</p>
+                      <p className="text-[11px] text-ink-faint mt-1 italic truncate">{campaign.businessName}</p>
                     </div>
-                    <span className="ml-3 text-xs font-semibold text-violet-400 flex-shrink-0">Edit →</span>
+                    <span className="text-[12px] text-ink-soft flex-shrink-0">Edit →</span>
                   </Link>
                 ))}
               </div>
-            </Card>
+            </section>
           )}
 
           {campaigns.length === 0 && !dbError && (
-            <Card accent="violet">
-              <CardTitle>Quick Start</CardTitle>
-              <p className="mt-2 text-sm text-slate-500">
-                Create your first campaign to see activity here.
+            <Card>
+              <CardTitle>Quick start</CardTitle>
+              <p className="mt-3 text-[13px] text-ink-soft leading-relaxed">
+                Begin your first campaign to populate this column.
               </p>
-              <div className="mt-4">
+              <div className="mt-6">
                 <Link href="/campaigns/create">
-                  <Button variant="secondary" size="sm" className="w-full">Create Campaign</Button>
+                  <Button variant="secondary" size="sm" className="w-full">Begin a campaign</Button>
                 </Link>
               </div>
             </Card>
           )}
-        </div>
+        </aside>
       </div>
 
-      {/* Create CTA banner */}
-      <div className="animate-in delay-3 relative rounded-xl overflow-hidden border border-violet-500/20">
-        {/* Background layers */}
-        <div className="absolute inset-0 bg-gradient-to-r from-violet-600/20 via-violet-500/10 to-cyan-600/15" />
-        <div className="absolute inset-0 bg-dot-grid opacity-40" />
-        {/* Content */}
-        <div className="relative px-6 py-8 sm:px-8 flex flex-col sm:flex-row sm:items-center justify-between gap-5">
-          <div>
-            <p className="text-[10px] font-semibold text-violet-400/70 uppercase tracking-widest mb-1">AI-Powered</p>
-            <h3 className="text-xl font-bold text-slate-100 font-display">Ready to launch your next campaign?</h3>
-            <p className="mt-1.5 text-sm text-slate-400">
-              Turn one offer into a full 30-day marketing campaign in minutes.
-            </p>
-          </div>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 flex-shrink-0">
-            <Link href="/campaigns/create">
-              <Button size="lg">Create Campaign</Button>
-            </Link>
-            <Link
-              href="/campaigns/create?template=lead-generation"
-              className="text-sm font-medium text-slate-400 hover:text-slate-200 transition-colors whitespace-nowrap"
-            >
-              Use a template →
-            </Link>
-          </div>
+      {/* Closing call to action — editorial colophon style */}
+      <section className="animate-in delay-4 border-y border-ink py-16 px-6 sm:px-12 text-center">
+        <p className="ornament-asterism" />
+        <h3 className="font-display text-[28px] sm:text-[36px] text-ink leading-tight tracking-[-0.02em] max-w-xl mx-auto">
+          Ready to <span className="display-italic">draft</span> your next campaign?
+        </h3>
+        <p className="mt-5 text-[14px] text-ink-soft max-w-md mx-auto leading-relaxed">
+          One offer. Thirty days of marketing. Drafted before lunch.
+        </p>
+        <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-5">
+          <Link href="/campaigns/create">
+            <Button size="lg">Begin a campaign</Button>
+          </Link>
+          <Link
+            href="/campaigns/create?template=lead-generation"
+            className="text-[13px] text-ink-soft hover:text-ink transition-colors underline underline-offset-[5px] decoration-rule hover:decoration-ink"
+          >
+            Start from a template →
+          </Link>
         </div>
-      </div>
+      </section>
     </div>
   );
 }

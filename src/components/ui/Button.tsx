@@ -9,19 +9,19 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantClasses = {
   primary:
-    'btn-shimmer text-white border border-violet-600/50 shadow-glow-violet hover:shadow-glow-violet-lg hover:border-violet-500 transition-shadow',
+    'bg-ink text-paper border border-ink hover:bg-black active:translate-y-px',
   secondary:
-    'bg-surface-raised hover:bg-border-subtle text-slate-200 border border-border-DEFAULT hover:border-border-bright transition-colors',
+    'bg-card text-ink border border-ink hover:bg-paper',
   ghost:
-    'bg-transparent hover:bg-surface-raised text-slate-400 hover:text-slate-200 border border-transparent hover:border-border-subtle transition-colors',
+    'bg-transparent text-ink border border-transparent hover:bg-rule-soft',
   destructive:
-    'bg-red-600/90 hover:bg-red-500 text-white border border-red-500/50 transition-colors',
+    'bg-oxblood text-paper border border-oxblood hover:bg-oxblood-deep',
 };
 
 const sizeClasses = {
-  sm: 'h-8 px-3 text-xs rounded-lg gap-1.5',
-  md: 'h-9 px-4 text-sm rounded-lg gap-2',
-  lg: 'h-11 px-6 text-sm rounded-xl gap-2 font-semibold',
+  sm: 'h-8 px-3 text-[12px] rounded-[3px] gap-1.5',
+  md: 'h-10 px-5 text-[13px] rounded-[3px] gap-2',
+  lg: 'h-12 px-7 text-[14px] rounded-[3px] gap-2 font-medium',
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -31,7 +31,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         disabled={disabled || loading}
         className={cn(
-          'inline-flex items-center justify-center font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-body',
+          'inline-flex items-center justify-center font-medium tracking-tight transition-colors duration-150 select-none',
+          'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink focus-visible:ring-offset-2 focus-visible:ring-offset-paper',
           variantClasses[variant],
           sizeClasses[size],
           (disabled || loading) && 'opacity-40 cursor-not-allowed pointer-events-none',
@@ -41,7 +42,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       >
         {loading && (
           <svg className="h-3.5 w-3.5 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
           </svg>
         )}

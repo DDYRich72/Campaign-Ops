@@ -35,10 +35,8 @@ export function CopyButton({
         type="button"
         onClick={handleCopy}
         className={cn(
-          'text-xs font-medium transition-colors',
-          copied
-            ? 'text-emerald-600'
-            : 'text-slate-400 hover:text-violet-600',
+          'text-[11px] font-medium tracking-tight transition-colors',
+          copied ? 'text-[#3A5731]' : 'text-ink-soft hover:text-ink',
           className
         )}
       >
@@ -52,10 +50,10 @@ export function CopyButton({
       type="button"
       onClick={handleCopy}
       className={cn(
-        'inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium transition-colors',
+        'inline-flex items-center gap-1.5 rounded-[2px] border px-2.5 py-1 text-[11px] font-medium transition-colors',
         copied
-          ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-          : 'border-slate-200 bg-white text-slate-600 hover:border-violet-300 hover:text-violet-700',
+          ? 'border-[#C8D4B8] bg-[#EAEFE2] text-[#3A5731]'
+          : 'border-rule bg-card text-ink-soft hover:border-ink hover:text-ink',
         className
       )}
     >

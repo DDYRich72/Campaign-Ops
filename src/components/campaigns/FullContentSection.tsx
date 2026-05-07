@@ -259,13 +259,64 @@ function ContentItem({
   onToggle,
   publishState,
   onUpdatePublish,
+  campaignId,
 }: {
   item: FullContentItem;
   isOpen: boolean;
   onToggle: () => void;
   publishState: ContentPublishState;
   onUpdatePublish: (patch: Partial<ContentPublishState>) => void;
+  campaignId: string;
 }) {
+  const [imageUrl, setImageUrl] = useState<string | undefined>((item as { image_url?: string }).image_url);
+  const [imageLoading, setImageLoading] = useState(false);
+  const [imageError, setImageError] = useState<string | undefined>((item as { image_error?: string }).image_error);
+
+  async function handleRegenerate() {
+    setImageLoading(true);
+    setImageError(undefined);
+    try {
+      const res = await fetch(`/api/campaigns/${campaignId}/content/image`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'regenerate', day: item.day, platform: item.platform }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? 'Failed to regenerate');
+      setImageUrl(data.image_url);
+    } catch (err) {
+      setImageError(err instanceof Error ? err.message : 'Failed to regenerate image');
+    } finally {
+      setImageLoading(false);
+    }
+  }
+
+  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageLoading(true);
+    setImageError(undefined);
+    try {
+      const formData = new FormData();
+      formData.append('action', 'upload');
+      formData.append('day', String(item.day));
+      formData.append('platform', item.platform);
+      formData.append('file', file);
+      const res = await fetch(`/api/campaigns/${campaignId}/content/image`, {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? 'Failed to upload');
+      setImageUrl(data.image_url);
+    } catch (err) {
+      setImageError(err instanceof Error ? err.message : 'Failed to upload image');
+    } finally {
+      setImageLoading(false);
+      e.target.value = '';
+    }
+  }
+
   const captionPreview = item.caption.replace(/\n+/g, ' ').trim().slice(0, 90);
   const previewTruncated = item.caption.replace(/\n+/g, ' ').trim().length > 90;
 
@@ -365,17 +416,174 @@ function ContentItem({
               </div>
             </div>
 
-            {/* Visual Prompt */}
+            {/* Visual Prompt + Generated Image */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Visual Prompt</p>
-                <CopyButton text={item.visual_prompt} label="Copy" variant="ghost" />
+                <p className="text-xs font-semibold text-ink-soft uppercase tracking-[0.18em]">Visual Prompt</p>
+                <CopyButton text={item.visual_prompt} label="Copy prompt" variant="ghost" />
               </div>
-              <p className="text-xs text-slate-400 leading-relaxed italic bg-surface-raised rounded-md px-3 py-2">
+              <p className="text-[12.5px] text-ink leading-relaxed italic bg-paper border border-rule rounded-[3px] px-3 py-2.5">
                 {item.visual_prompt}
               </p>
+
+              {/* External image-generator links */}
+              <div className="mt-3">
+                <p className="text-[10.5px] font-medium uppercase tracking-[0.18em] text-ink-faint mb-2">
+                  Generate with
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <a
+                    href={`https://chatgpt.com/?q=${encodeURIComponent(item.visual_prompt)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-[2px] border border-rule bg-card px-2.5 py-1 text-[11px] font-medium text-ink hover:border-ink transition-colors"
+                  >
+                    GPT Image 2.0
+                    <svg className="h-2.5 w-2.5 text-ink-faint" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5">
+                      <path d="M3 7L7 3M7 3H4M7 3V6" strokeLinecap="square" />
+                    </svg>
+                  </a>
+                  <a
+                    href="https://gemini.google.com/app"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-[2px] border border-rule bg-card px-2.5 py-1 text-[11px] font-medium text-ink hover:border-ink transition-colors"
+                    title="Copy the prompt first, then paste into Gemini"
+                  >
+                    Nano Banana
+                    <svg className="h-2.5 w-2.5 text-ink-faint" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5">
+                      <path d="M3 7L7 3M7 3H4M7 3V6" strokeLinecap="square" />
+                    </svg>
+                  </a>
+                  <button
+                    type="button"
+                    onClick={handleRegenerate}
+                    disabled={imageLoading}
+                    className="inline-flex items-center gap-1.5 rounded-[2px] border border-ink bg-ink px-2.5 py-1 text-[11px] font-medium text-paper hover:bg-black transition-colors disabled:opacity-40"
+                  >
+                    {imageLoading ? (
+                      <>
+                        <svg className="h-2.5 w-2.5 animate-spin" viewBox="0 0 24 24" fill="none">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+                        </svg>
+                        Generating…
+                      </>
+                    ) : (
+                      <>DALL·E {imageUrl ? '(regenerate)' : '(in-app)'}</>
+                    )}
+                  </button>
+                </div>
+                <p className="mt-2 text-[10.5px] text-ink-faint italic">
+                  Copy the prompt, paste into your tool of choice, then upload the result below.
+                </p>
+              </div>
+
+              {/* Image display */}
+              {imageUrl && (
+                <div className="mt-3">
+                  <img
+                    src={imageUrl}
+                    alt={`Image for day ${item.day}`}
+                    className="rounded-[3px] w-full max-h-64 object-cover border border-rule"
+                  />
+                </div>
+              )}
+              {imageError && !imageUrl && (
+                <p className="mt-2 text-[11px] text-oxblood italic">Image error: {imageError}</p>
+              )}
+
+              {/* Upload your image */}
+              <div className="mt-3">
+                <label className="inline-flex items-center gap-1.5 rounded-[2px] border border-rule bg-card px-2.5 py-1 text-[11px] font-medium text-ink hover:border-ink transition-colors cursor-pointer">
+                  <svg className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clipRule="evenodd"/>
+                  </svg>
+                  {imageUrl ? 'Replace with your own image' : 'Upload your own image'}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="sr-only"
+                    onChange={handleUpload}
+                    disabled={imageLoading}
+                  />
+                </label>
+              </div>
             </div>
           </div>
+
+          {/* Video Prompt — only renders for video-friendly platforms */}
+          {item.video_prompt && (
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <p className="text-xs font-semibold text-ink-soft uppercase tracking-[0.18em]">Video Prompt</p>
+                <CopyButton text={item.video_prompt} label="Copy prompt" variant="ghost" />
+              </div>
+              <p className="text-[12.5px] text-ink leading-relaxed italic bg-paper border border-rule rounded-[3px] px-3 py-2.5">
+                {item.video_prompt}
+              </p>
+
+              {/* External video-generator links */}
+              <div className="mt-3">
+                <p className="text-[10.5px] font-medium uppercase tracking-[0.18em] text-ink-faint mb-2">
+                  Generate with
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <a
+                    href="https://sora.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-[2px] border border-rule bg-card px-2.5 py-1 text-[11px] font-medium text-ink hover:border-ink transition-colors"
+                    title="Copy the prompt first, then paste into Sora"
+                  >
+                    Sora
+                    <svg className="h-2.5 w-2.5 text-ink-faint" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5">
+                      <path d="M3 7L7 3M7 3H4M7 3V6" strokeLinecap="square" />
+                    </svg>
+                  </a>
+                  <a
+                    href="https://gemini.google.com/app"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-[2px] border border-rule bg-card px-2.5 py-1 text-[11px] font-medium text-ink hover:border-ink transition-colors"
+                    title="Copy the prompt first, then paste into Gemini (Veo 3)"
+                  >
+                    Veo 3
+                    <svg className="h-2.5 w-2.5 text-ink-faint" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5">
+                      <path d="M3 7L7 3M7 3H4M7 3V6" strokeLinecap="square" />
+                    </svg>
+                  </a>
+                  <a
+                    href="https://app.runwayml.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-[2px] border border-rule bg-card px-2.5 py-1 text-[11px] font-medium text-ink hover:border-ink transition-colors"
+                    title="Copy the prompt first, then paste into Runway"
+                  >
+                    Runway
+                    <svg className="h-2.5 w-2.5 text-ink-faint" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5">
+                      <path d="M3 7L7 3M7 3H4M7 3V6" strokeLinecap="square" />
+                    </svg>
+                  </a>
+                  <a
+                    href="https://pika.art/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-[2px] border border-rule bg-card px-2.5 py-1 text-[11px] font-medium text-ink hover:border-ink transition-colors"
+                    title="Copy the prompt first, then paste into Pika"
+                  >
+                    Pika
+                    <svg className="h-2.5 w-2.5 text-ink-faint" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5">
+                      <path d="M3 7L7 3M7 3H4M7 3V6" strokeLinecap="square" />
+                    </svg>
+                  </a>
+                </div>
+                <p className="mt-2 text-[10.5px] text-ink-faint italic">
+                  Copy the prompt, generate in your tool of choice, then publish directly to your platform.
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Notes */}
           {item.notes && (
@@ -761,6 +969,7 @@ export function FullContentSection({
                   onToggle={() => toggle(item.day)}
                   publishState={publishState[String(item.day)] ?? DEFAULT_PUBLISH_STATE}
                   onUpdatePublish={(patch) => handleUpdateItem(item.day, patch)}
+                  campaignId={campaignId}
                 />
               ))}
               {isFree && items.length > FREE_PREVIEW_COUNT && (

@@ -62,6 +62,7 @@ export function generateCSV(campaign: ExportableCampaign): string {
       'cta',
       'hashtags',
       'visual_prompt',
+      'video_prompt',
       'notes',
     ]);
     const rows = campaign.full_content_json!.map((item) =>
@@ -75,6 +76,7 @@ export function generateCSV(campaign: ExportableCampaign): string {
         item.cta,
         item.hashtags.map((h) => `#${h}`).join(' '),
         item.visual_prompt,
+        item.video_prompt ?? '',
         item.notes ?? '',
       ])
     );
@@ -187,6 +189,9 @@ export function generateMarkdown(campaign: ExportableCampaign): string {
         `**Hashtags:** ${item.hashtags.map((h) => `#${h}`).join(' ')}  `
       );
       lines.push(`**Visual Prompt:** *${item.visual_prompt}*`);
+      if (item.video_prompt) {
+        lines.push(`**Video Prompt:** *${item.video_prompt}*`);
+      }
       if (item.notes) {
         lines.push('');
         lines.push(`> **Note:** ${item.notes}`);
@@ -290,6 +295,9 @@ export function formatDayBlock(item: FullContentItem): string {
     `Hashtags: ${item.hashtags.map((h) => `#${h}`).join(' ')}`,
     `Visual Prompt: ${item.visual_prompt}`,
   ];
+  if (item.video_prompt) {
+    lines.push(`Video Prompt: ${item.video_prompt}`);
+  }
   if (item.notes) {
     lines.push('');
     lines.push(`Note: ${item.notes}`);
@@ -310,6 +318,7 @@ export function generateFilteredContentCSV(items: FullContentItem[]): string {
     'cta',
     'hashtags',
     'visual_prompt',
+    'video_prompt',
     'notes',
   ]);
   const rows = items.map((item) =>
@@ -323,6 +332,7 @@ export function generateFilteredContentCSV(items: FullContentItem[]): string {
       item.cta,
       item.hashtags.map((h) => `#${h}`).join(' '),
       item.visual_prompt,
+      item.video_prompt ?? '',
       item.notes ?? '',
     ])
   );

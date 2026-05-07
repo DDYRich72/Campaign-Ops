@@ -5,17 +5,13 @@ interface EmptyStateProps {
   action?: React.ReactNode;
 }
 
-export function EmptyState({ icon, title, description, action }: EmptyStateProps) {
+export function EmptyState({ title, description, action }: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-border px-6 py-12 text-center">
-      {icon && (
-        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-surface-raised text-slate-500">
-          {icon}
-        </div>
-      )}
-      <h3 className="text-sm font-semibold text-slate-300">{title}</h3>
-      <p className="mt-1.5 text-sm text-slate-500 max-w-sm">{description}</p>
-      {action && <div className="mt-4">{action}</div>}
+    <div className="flex flex-col items-center justify-center border border-dashed border-rule px-6 py-16 text-center bg-paper">
+      <p className="editorial-eyebrow mb-4">A blank page</p>
+      <h3 className="font-display text-[22px] text-ink tracking-tight">{title}</h3>
+      <p className="mt-3 text-[13px] text-ink-soft max-w-sm leading-relaxed">{description}</p>
+      {action && <div className="mt-7">{action}</div>}
     </div>
   );
 }

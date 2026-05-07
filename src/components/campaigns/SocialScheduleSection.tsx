@@ -1,297 +1,270 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useTransition } from 'react';
 import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
+import { saveContentPublishStateAction } from '@/app/actions/publish';
+import type { FullContentItem } from '@/lib/supabase/types';
+import type { ContentPublishState, ContentPublishStateMap } from '@/lib/supabase/types';
 
-interface SocialAccount {
-  id: string;
-  platform: string;
-  account_name: string;
-  account_handle: string;
-}
+// Platform open URLs — Twitter supports pre-filled text via intent/tweet
+const PLATFORM_URLS: Record<string, (text: string) => string> = {
+  twitter:   (text) => `https://twitter.com/intent/tweet?text=${encodeURIComponent(text.slice(0, 280))}`,
+  'twitter/x': (text) => `https://twitter.com/intent/tweet?text=${encodeURIComponent(text.slice(0, 280))}`,
+  linkedin:  () => 'https://www.linkedin.com/feed/',
+  facebook:  () => 'https://www.facebook.com/',
+  instagram: () => 'https://www.instagram.com/',
+  tiktok:    () => 'https://www.tiktok.com/upload',
+};
 
-interface Post {
-  id: string;
-  content_text: string;
-  scheduled_at: string;
-  status: 'pending' | 'posted' | 'failed';
-  social_accounts: {
-    platform: string;
-    account_name: string;
-  };
-}
+const PLATFORM_ICONS: Record<string, string> = {
+  twitter: '🐦', 'twitter/x': '🐦', linkedin: '💼', facebook: '📘',
+  instagram: '📷', tiktok: '🎵', email: '✉️', sms: '💬',
+};
 
-interface Schedule {
-  frequency: string;
-  posts_per_day: number;
-  timezone: string;
-  platforms_enabled: string[];
-}
+const DEFAULT_STATE: ContentPublishState = {
+  status: 'draft',
+  scheduled_for: null,
+  published_at: null,
+  notes: null,
+};
 
-export function SocialScheduleSection({ campaignId, hasContent }: { campaignId: string; hasContent: boolean }) {
-  const [accounts, setAccounts] = useState<SocialAccount[]>([]);
-  const [schedule, setSchedule] = useState<Schedule | null>(null);
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [scheduling, setScheduling] = useState(false);
+type Filter = 'all' | 'pending' | 'posted';
 
-  // Form state
-  const [selectedAccounts, setSelectedAccounts] = useState<string[]>([]);
-  const [frequency, setFrequency] = useState<'immediate' | 'daily' | 'weekly' | 'smart'>('daily');
-  const [postsPerDay, setPostsPerDay] = useState(2);
+export function SocialScheduleSection({
+  campaignId,
+  fullContent,
+  initialPublishState,
+  isFree = false,
+}: {
+  campaignId: string;
+  fullContent: FullContentItem[];
+  initialPublishState: ContentPublishStateMap;
+  isFree?: boolean;
+}) {
+  const [publishState, setPublishState] = useState<ContentPublishStateMap>(initialPublishState);
+  const [filter, setFilter] = useState<Filter>('pending');
+  const [copiedDay, setCopiedDay] = useState<number | null>(null);
+  const [, startTransition] = useTransition();
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  async function fetchData() {
-    try {
-      // Fetch connected accounts
-      const accountsRes = await fetch('/api/social/accounts');
-      if (accountsRes.ok) {
-        const accountsData = await accountsRes.json();
-        setAccounts(accountsData.accounts || []);
-      }
-
-      // Fetch existing schedule
-      const scheduleRes = await fetch(`/api/campaigns/${campaignId}/schedule`);
-      if (scheduleRes.ok) {
-        const scheduleData = await scheduleRes.json();
-        setSchedule(scheduleData.schedule);
-        setPosts(scheduleData.posts || []);
-        if (scheduleData.schedule) {
-          setSelectedAccounts(scheduleData.schedule.platforms_enabled || []);
-          setFrequency(scheduleData.schedule.frequency);
-          setPostsPerDay(scheduleData.schedule.posts_per_day);
-        }
-      }
-    } catch (err) {
-      console.error('Failed to fetch schedule data:', err);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function handleSchedule() {
-    if (!selectedAccounts.length) {
-      alert('Select at least one social account');
-      return;
-    }
-
-    setScheduling(true);
-    try {
-      const res = await fetch(`/api/campaigns/${campaignId}/schedule`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          frequency,
-          postsPerDay,
-          bestTimes: [
-            { hour: 9, minute: 0 },
-            { hour: 12, minute: 0 },
-            { hour: 15, minute: 0 },
-            { hour: 18, minute: 0 },
-          ].slice(0, postsPerDay),
-          timezone: 'America/New_York',
-          platformAccountIds: selectedAccounts,
-        }),
-      });
-
-      if (!res.ok) throw new Error('Failed to schedule');
-      
-      const data = await res.json();
-      alert(`Scheduled ${data.postsScheduled} posts!`);
-      fetchData(); // Refresh
-    } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to schedule posts');
-    } finally {
-      setScheduling(false);
-    }
-  }
-
-  if (loading) {
+  if (isFree) {
     return (
       <Card>
         <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3">
-          Social Media Posting
+          Publishing Queue
         </h2>
-        <div className="text-sm text-slate-500">Loading...</div>
+        <div className="rounded-lg bg-violet-500/10 border border-violet-500/20 p-4">
+          <p className="text-sm font-semibold text-slate-200 mb-1">Unlock the Publishing Queue</p>
+          <p className="text-xs text-slate-400 mb-3">
+            Get a structured queue of all 30 posts with one-click copy, platform links, and progress tracking.
+          </p>
+          <a
+            href="/pricing"
+            className="inline-flex items-center rounded-lg bg-violet-600 px-4 py-2 text-sm font-semibold text-white hover:bg-violet-500 transition-colors"
+          >
+            Upgrade to Enable →
+          </a>
+        </div>
       </Card>
     );
   }
 
-  if (!accounts.length) {
+  if (!fullContent?.length) {
     return (
       <Card>
         <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3">
-          Social Media Posting
-        </h2>
-        <p className="text-sm text-slate-400 mb-3">
-          Connect your social media accounts to auto-post this campaign.
-        </p>
-        <a
-          href="/settings"
-          className="inline-flex items-center gap-2 rounded-lg border border-violet-500/50 bg-violet-500/10 px-4 py-2 text-sm font-medium text-violet-300 hover:bg-violet-500/20 transition-colors"
-        >
-          Go to Settings →
-        </a>
-      </Card>
-    );
-  }
-
-  if (!hasContent) {
-    return (
-      <Card>
-        <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3">
-          Social Media Posting
+          Publishing Queue
         </h2>
         <p className="text-sm text-slate-400">
-          Generate full content first to enable social posting.
+          Generate full content first to build your publishing queue.
         </p>
       </Card>
     );
   }
 
-  const PLATFORM_NAMES: Record<string, string> = {
-    twitter: 'Twitter/X',
-    linkedin: 'LinkedIn',
-    facebook: 'Facebook',
-    instagram: 'Instagram',
-    tiktok: 'TikTok',
-  };
+  function markPosted(day: number) {
+    const current = publishState[String(day)] ?? DEFAULT_STATE;
+    const updated: ContentPublishState = {
+      ...current,
+      status: 'published',
+      published_at: new Date().toISOString(),
+    };
+    const newState = { ...publishState, [String(day)]: updated };
+    setPublishState(newState);
+    startTransition(async () => {
+      await saveContentPublishStateAction(campaignId, newState);
+    });
+  }
+
+  function markUnposted(day: number) {
+    const current = publishState[String(day)] ?? DEFAULT_STATE;
+    const updated: ContentPublishState = { ...current, status: 'draft', published_at: null };
+    const newState = { ...publishState, [String(day)]: updated };
+    setPublishState(newState);
+    startTransition(async () => {
+      await saveContentPublishStateAction(campaignId, newState);
+    });
+  }
+
+  async function copyCaption(item: FullContentItem, day: number) {
+    const hashtags = item.hashtags?.map((h: string) => `#${h}`).join(' ') ?? '';
+    const text = `${item.caption}\n\n${hashtags}`.trim();
+    await navigator.clipboard.writeText(text);
+    setCopiedDay(day);
+    setTimeout(() => setCopiedDay(null), 2000);
+  }
+
+  function openPlatform(item: FullContentItem) {
+    const key = item.platform.toLowerCase();
+    const hashtags = item.hashtags?.map((h: string) => `#${h}`).join(' ') ?? '';
+    const text = `${item.caption}\n\n${hashtags}`.trim();
+    const urlFn = PLATFORM_URLS[key] ?? (() => `https://www.google.com/search?q=${encodeURIComponent(key + ' post')}`);
+    window.open(urlFn(text), '_blank', 'noopener,noreferrer');
+  }
+
+  const posted = fullContent.filter(i => (publishState[String(i.day)] ?? DEFAULT_STATE).status === 'published').length;
+  const total = fullContent.length;
+
+  const filtered = fullContent.filter(item => {
+    const status = (publishState[String(item.day)] ?? DEFAULT_STATE).status;
+    if (filter === 'pending') return status !== 'published';
+    if (filter === 'posted') return status === 'published';
+    return true;
+  });
 
   return (
     <Card>
-      <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3">
-        Social Media Posting
-      </h2>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide">
+          Publishing Queue
+        </h2>
+        <span className="text-xs text-slate-500">
+          <span className="text-emerald-400 font-semibold">{posted}</span> / {total} posted
+        </span>
+      </div>
 
-      {schedule ? (
-        <div className="mb-4 p-3 rounded-lg bg-green-500/10 border border-green-500/20">
-          <p className="text-sm text-green-400 font-medium">
-            ✓ {posts.length} posts scheduled ({frequency})
-          </p>
-          <p className="text-xs text-green-400/70 mt-1">
-            {posts.filter(p => p.status === 'posted').length} posted,{' '}
-            {posts.filter(p => p.status === 'pending').length} pending
-          </p>
-        </div>
-      ) : (
-        <>
-          {/* Account Selection */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-slate-300 mb-2">
-              Post to:
-            </label>
-            <div className="space-y-2">
-              {accounts.map((account) => (
-                <label
-                  key={account.id}
-                  className="flex items-center gap-3 p-2 rounded-lg border border-border-subtle hover:bg-surface-raised cursor-pointer"
-                >
-                  <input
-                    type="checkbox"
-                    checked={selectedAccounts.includes(account.id)}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setSelectedAccounts([...selectedAccounts, account.id]);
-                      } else {
-                        setSelectedAccounts(selectedAccounts.filter(id => id !== account.id));
-                      }
-                    }}
-                    className="rounded border-slate-600 bg-slate-700 text-violet-500"
-                  />
-                  <span className="text-lg">
-                    {account.platform === 'twitter' && '🐦'}
-                    {account.platform === 'linkedin' && '💼'}
-                    {account.platform === 'facebook' && '📘'}
-                    {account.platform === 'instagram' && '📷'}
-                    {account.platform === 'tiktok' && '🎵'}
-                  </span>
-                  <div>
-                    <p className="text-sm text-slate-200">
-                      {PLATFORM_NAMES[account.platform] || account.platform}
-                    </p>
-                    <p className="text-xs text-slate-500">@{account.account_handle}</p>
-                  </div>
-                </label>
-              ))}
-            </div>
-          </div>
+      {/* Progress bar */}
+      <div className="w-full h-1.5 rounded-full bg-slate-700 mb-4">
+        <div
+          className="h-1.5 rounded-full bg-emerald-500 transition-all duration-500"
+          style={{ width: `${total > 0 ? (posted / total) * 100 : 0}%` }}
+        />
+      </div>
 
-          {/* Frequency */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-slate-300 mb-2">
-              Posting Frequency:
-            </label>
-            <select
-              value={frequency}
-              onChange={(e) => setFrequency(e.target.value as any)}
-              className="w-full rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-slate-200"
-            >
-              <option value="immediate">Post immediately</option>
-              <option value="daily">Daily ({postsPerDay} posts/day)</option>
-              <option value="weekly">Weekly spread</option>
-              <option value="smart">Smart (AI-optimized times)</option>
-            </select>
-          </div>
-
-          {/* Posts per day (if daily/weekly) */}
-          {frequency !== 'immediate' && (
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-slate-300 mb-2">
-                Posts per day: {postsPerDay}
-              </label>
-              <input
-                type="range"
-                min={1}
-                max={4}
-                value={postsPerDay}
-                onChange={(e) => setPostsPerDay(parseInt(e.target.value))}
-                className="w-full accent-violet-500"
-              />
-            </div>
-          )}
-
-          {/* Schedule Button */}
-          <Button
-            onClick={handleSchedule}
-            disabled={scheduling || !selectedAccounts.length}
-            isLoading={scheduling}
+      {/* Filter tabs */}
+      <div className="flex gap-1 mb-4">
+        {(['pending', 'all', 'posted'] as Filter[]).map(f => (
+          <button
+            key={f}
+            onClick={() => setFilter(f)}
+            className={`px-3 py-1 rounded-md text-xs font-medium transition-colors capitalize ${
+              filter === f
+                ? 'bg-violet-500/20 text-violet-300 border border-violet-500/30'
+                : 'text-slate-500 hover:text-slate-300'
+            }`}
           >
-            {scheduling ? 'Scheduling...' : 'Schedule Posts'}
-          </Button>
-        </>
-      )}
+            {f}
+          </button>
+        ))}
+      </div>
 
-      {/* Recent Posts */}
-      {posts.length > 0 && (
-        <div className="mt-4 pt-4 border-t border-border-subtle">
-          <h3 className="text-xs font-medium text-slate-500 uppercase mb-2">Upcoming Posts</h3>
-          <div className="space-y-2 max-h-40 overflow-y-auto">
-            {posts.slice(0, 5).map((post) => (
+      {/* Queue list */}
+      {filtered.length === 0 ? (
+        <p className="text-sm text-slate-500 text-center py-4">
+          {filter === 'posted' ? 'Nothing posted yet.' : 'All done! 🎉'}
+        </p>
+      ) : (
+        <div className="space-y-2">
+          {filtered.map(item => {
+            const status = (publishState[String(item.day)] ?? DEFAULT_STATE).status;
+            const isPosted = status === 'published';
+            const platformKey = item.platform.toLowerCase();
+
+            return (
               <div
-                key={post.id}
-                className="p-2 rounded bg-surface-raised text-xs"
+                key={item.day}
+                className={`rounded-lg border p-3 transition-colors ${
+                  isPosted
+                    ? 'border-emerald-500/20 bg-emerald-500/5'
+                    : 'border-border-subtle bg-surface-raised'
+                }`}
               >
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-400">
-                    {new Date(post.scheduled_at).toLocaleDateString()} @{' '}
-                    {new Date(post.scheduled_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                {/* Row: icon + day + platform + status */}
+                <div className="flex items-start gap-2.5">
+                  <span className="text-base mt-0.5 flex-shrink-0">
+                    {PLATFORM_ICONS[platformKey] ?? '📣'}
                   </span>
-                  <span className={`text-xs ${
-                    post.status === 'posted' ? 'text-green-400' :
-                    post.status === 'failed' ? 'text-red-400' :
-                    'text-yellow-400'
-                  }`}>
-                    {post.status}
-                  </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-xs font-semibold text-slate-300">Day {item.day}</span>
+                      <span className="text-xs text-slate-500">{item.platform}</span>
+                      <span className="text-xs text-slate-600">·</span>
+                      <span className="text-xs text-slate-500 capitalize">{item.content_type}</span>
+                      {isPosted && (
+                        <span className="text-xs text-emerald-400 font-medium">✓ Posted</span>
+                      )}
+                    </div>
+                    {/* Caption preview */}
+                    <p className="text-xs text-slate-400 mt-1 line-clamp-2 leading-relaxed">
+                      {item.caption}
+                    </p>
+                    {/* Image thumbnail */}
+                    {(item as { image_url?: string }).image_url && (
+                      <img
+                        src={(item as { image_url?: string }).image_url}
+                        alt=""
+                        className="mt-2 h-16 w-24 rounded object-cover border border-border-subtle"
+                      />
+                    )}
+                  </div>
                 </div>
-                <p className="text-slate-500 mt-1 truncate">{post.content_text.slice(0, 60)}...</p>
+
+                {/* Actions */}
+                <div className="mt-2.5 flex items-center gap-2 flex-wrap">
+                  <button
+                    onClick={() => copyCaption(item, item.day)}
+                    className="inline-flex items-center gap-1 rounded border border-slate-600 bg-surface-card px-2.5 py-1 text-xs text-slate-400 hover:text-slate-200 hover:border-slate-500 transition-colors"
+                  >
+                    {copiedDay === item.day ? (
+                      <><svg className="h-3 w-3 text-emerald-400" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg> Copied!</>
+                    ) : (
+                      <><svg className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"/><path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"/></svg> Copy Caption</>
+                    )}
+                  </button>
+
+                  <button
+                    onClick={() => openPlatform(item)}
+                    className="inline-flex items-center gap-1 rounded border border-slate-600 bg-surface-card px-2.5 py-1 text-xs text-slate-400 hover:text-slate-200 hover:border-slate-500 transition-colors"
+                  >
+                    <svg className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/>
+                      <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/>
+                    </svg>
+                    Open {item.platform}
+                  </button>
+
+                  {isPosted ? (
+                    <button
+                      onClick={() => markUnposted(item.day)}
+                      className="inline-flex items-center gap-1 rounded border border-slate-700 px-2.5 py-1 text-xs text-slate-600 hover:text-slate-400 transition-colors"
+                    >
+                      Undo
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => markPosted(item.day)}
+                      className="inline-flex items-center gap-1 rounded border border-emerald-500/40 bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-400 hover:bg-emerald-500/20 transition-colors"
+                    >
+                      <svg className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                      </svg>
+                      Mark as Posted
+                    </button>
+                  )}
+                </div>
               </div>
-            ))}
-          </div>
+            );
+          })}
         </div>
       )}
     </Card>

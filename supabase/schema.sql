@@ -102,24 +102,6 @@ create table if not exists public.social_accounts (
   unique(clerk_user_id, platform, account_handle)
 );
 
--- Enable RLS
-alter table public.social_accounts enable row level security;
-alter table public.posting_schedules enable row level security;
-alter table public.scheduled_posts enable row level security;
-
--- RLS Policies
-create policy "Users can only see their own social accounts"
-  on public.social_accounts for all
-  using (clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub');
-
-create policy "Users can only see their own posting schedules"
-  on public.posting_schedules for all
-  using (clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub');
-
-create policy "Users can only see their own scheduled posts"
-  on public.scheduled_posts for all
-  using (clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub');
-
 create table if not exists public.posting_schedules (
   id                    uuid primary key default gen_random_uuid(),
   clerk_user_id         text not null,
@@ -150,6 +132,24 @@ create table if not exists public.scheduled_posts (
   created_at            timestamptz not null default now(),
   updated_at            timestamptz not null default now()
 );
+
+-- Enable RLS (must be after all three tables are created)
+alter table public.social_accounts enable row level security;
+alter table public.posting_schedules enable row level security;
+alter table public.scheduled_posts enable row level security;
+
+-- RLS Policies
+create policy "Users can only see their own social accounts"
+  on public.social_accounts for all
+  using (clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub');
+
+create policy "Users can only see their own posting schedules"
+  on public.posting_schedules for all
+  using (clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub');
+
+create policy "Users can only see their own scheduled posts"
+  on public.scheduled_posts for all
+  using (clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub');
 
 -- Indexes for performance
 create index if not exists social_accounts_clerk_user_id_idx 

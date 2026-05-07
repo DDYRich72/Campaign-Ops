@@ -65,6 +65,7 @@ export interface FullContentItem {
   cta: string;
   hashtags: string[];
   visual_prompt: string;
+  video_prompt: string | null; // shot description for video-friendly platforms; null for static/text-only
   notes: string | null;
   image_url?: string; // Generated image URL from DALL-E 3
   image_error?: string; // Error message if image generation failed

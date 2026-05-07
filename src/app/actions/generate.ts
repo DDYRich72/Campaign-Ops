@@ -125,6 +125,7 @@ Return ONLY valid JSON with this exact structure — no markdown, no code fences
       "cta": "a clear, specific CTA tied to this day's content",
       "hashtags": ["relevant", "hashtag", "list"],
       "visual_prompt": "a specific description of the ideal image or graphic for this post",
+      "video_prompt": "a 2-4 sentence shot description for video-friendly platforms (Reel, TikTok, Story, YouTube, video ad) — scene, action, mood, on-screen text, camera direction. Null for static/text platforms.",
       "notes": "optional production tip, or null"
     }
   ]
@@ -148,6 +149,10 @@ Content quality rules:
 - If a geographic market is specified (${c.geographic_market ?? 'none'}), reference it in relevant captions
 - CTAs must be specific and match the campaign's primary CTA where appropriate
 - Visual prompts must be concrete and specific — not "a smiling person" but a detailed scene description
+- video_prompt rules:
+  - Populate with a 2-4 sentence shot description for video-native content_types: Reel, TikTok, Short, Story, YouTube, Video Ad, video carousel, or any item where content_type contains "video"
+  - Format: open with the scene, then action, then mood/lighting, then on-screen text or B-roll cues. End with a camera direction (e.g., "slow push-in", "static wide shot", "handheld, eye-level")
+  - Set to null for: Email, SMS, Blog, static Image post, Newsletter, or any text-only content_type
 - Hashtags: 5–8 per post, mix of niche-specific and broad reach. Do NOT include the # symbol — just the word.
 - Generate exactly 30 items for days 1 through 30 in order`;
 }
@@ -214,7 +219,9 @@ function isValidFullContent(items: unknown): items is FullContentItem[] {
       typeof i.caption === 'string' &&
       typeof i.cta === 'string' &&
       Array.isArray(i.hashtags) &&
-      typeof i.visual_prompt === 'string'
+      typeof i.visual_prompt === 'string' &&
+      // video_prompt is optional for backward compat; if present must be string|null
+      (i.video_prompt === undefined || i.video_prompt === null || typeof i.video_prompt === 'string')
     );
   });
 }
@@ -414,7 +421,7 @@ export async function generateFullContentAction(
       const imageResult = imageResults.find(r => r.day === item.day && r.platform === item.platform);
       return {
         ...item,
-        image_url: imageResult?.image_url,
+        image_url: imageResult?.image_url ?? undefined,
         image_error: imageResult?.error || undefined,
       };
     });

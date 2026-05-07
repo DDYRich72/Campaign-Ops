@@ -1,16 +1,24 @@
 import Link from 'next/link';
-import { currentUser } from '@clerk/nextjs/server';
+import { auth, currentUser } from '@clerk/nextjs/server';
 import { Card } from '@/components/ui/Card';
 import { Separator } from '@/components/ui/Separator';
+import { SocialAccountsCard } from './SocialAccountsCard';
+import { getPlanKey } from '@/lib/subscription';
+import { PLANS, FREE_LIMITS } from '@/lib/plans';
 
 export const metadata = { title: 'Settings — Campaign Operator' };
 
 export default async function SettingsPage() {
+  const { userId } = await auth();
   const user = await currentUser();
 
   const fullName = user?.fullName ?? user?.firstName ?? '—';
   const email = user?.emailAddresses[0]?.emailAddress ?? '—';
   const initials = (user?.firstName?.[0] ?? user?.emailAddresses[0]?.emailAddress?.[0] ?? 'U').toUpperCase();
+
+  const planKey = userId ? await getPlanKey(userId) : null;
+  const plan = planKey ? PLANS[planKey] : null;
+  const limits = plan ? plan.limits : FREE_LIMITS;
 
   return (
     <div className="max-w-2xl space-y-8">
@@ -70,6 +78,67 @@ export default async function SettingsPage() {
           </Link>
         </div>
       </Card>
+
+      {/* Plan & Billing */}
+      <Card>
+        <h2 className="text-base font-semibold text-slate-200 mb-1">Plan & Billing</h2>
+        <p className="text-sm text-slate-500 mb-4">Your current plan and usage limits.</p>
+        <Separator />
+        <div className="mt-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-semibold text-slate-200">
+                {plan ? plan.label : 'Free'} Plan
+                {plan && (
+                  <span className="ml-2 text-xs font-normal text-violet-400">{plan.price}/mo</span>
+                )}
+              </p>
+              <p className="text-xs text-slate-500 mt-0.5">
+                {plan ? plan.description : 'Limited access — upgrade to unlock all features'}
+              </p>
+            </div>
+            {!plan && (
+              <Link
+                href="/pricing"
+                className="flex-shrink-0 inline-flex items-center rounded-lg bg-violet-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-violet-500 transition-colors"
+              >
+                Upgrade
+              </Link>
+            )}
+          </div>
+          <div className="grid grid-cols-2 gap-2 pt-1">
+            {[
+              { label: 'Campaigns', limit: limits.campaigns },
+              { label: 'Strategy Generations', limit: limits.strategyGenerations },
+              { label: 'Full Content', limit: limits.fullContentGenerations },
+              { label: 'Funnel Assets', limit: limits.funnelGenerations },
+            ].map(({ label, limit }) => (
+              <div key={label} className="rounded-lg border border-border-subtle bg-surface-raised p-2.5">
+                <p className="text-xs text-slate-500">{label}</p>
+                <p className="text-sm font-semibold text-slate-200 mt-0.5">
+                  {limit === 999 ? 'Unlimited' : limit}
+                </p>
+              </div>
+            ))}
+          </div>
+          {!plan && (
+            <div className="rounded-lg bg-violet-500/10 border border-violet-500/20 p-3 mt-2">
+              <p className="text-xs text-violet-300 font-medium">
+                Upgrade for more campaigns, social media auto-posting, DALL-E image generation, and unlimited content.
+              </p>
+              <Link
+                href="/pricing"
+                className="inline-block mt-2 text-xs font-semibold text-violet-400 hover:text-violet-300 transition-colors"
+              >
+                View pricing plans →
+              </Link>
+            </div>
+          )}
+        </div>
+      </Card>
+
+      {/* Social Media Accounts */}
+      <SocialAccountsCard />
 
       {/* Quick Links */}
       <Card>

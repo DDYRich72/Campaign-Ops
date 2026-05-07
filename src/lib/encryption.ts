@@ -1,9 +1,8 @@
 /**
  * Simple encryption utilities for sensitive data
  * In production, use a proper KMS or Vault service
+ * Note: Current impl is XOR-based — not suitable for high-security production use.
  */
-
-const ALGORITHM = 'aes-256-gcm';
 
 /**
  * Encrypt a string using AES-256-GCM
@@ -21,7 +20,7 @@ export function encrypt(text: string): string {
     // In production, use crypto.subtle or node:crypto properly
     const keyBytes = Buffer.from(key.slice(0, 32).padEnd(32, '0'));
     const textBytes = Buffer.from(text);
-    const encrypted = textBytes.map((b, i) => b ^ keyBytes[i % keyBytes.length]);
+    const encrypted = Buffer.from(textBytes.map((b, i) => b ^ keyBytes[i % keyBytes.length]));
     return `enc:${encrypted.toString('base64')}`;
   } catch (err) {
     console.error('Encryption failed:', err);
@@ -46,7 +45,7 @@ export function decrypt(encryptedText: string): string {
   try {
     const keyBytes = Buffer.from(key.slice(0, 32).padEnd(32, '0'));
     const encrypted = Buffer.from(encryptedText.slice('enc:'.length), 'base64');
-    const decrypted = encrypted.map((b, i) => b ^ keyBytes[i % keyBytes.length]);
+    const decrypted = Buffer.from(encrypted.map((b, i) => b ^ keyBytes[i % keyBytes.length]));
     return decrypted.toString('utf8');
   } catch (err) {
     console.error('Decryption failed:', err);

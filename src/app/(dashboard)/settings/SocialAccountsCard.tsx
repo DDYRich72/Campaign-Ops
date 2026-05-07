@@ -51,7 +51,7 @@ export function SocialAccountsCard() {
       if (!res.ok) throw new Error('Failed to fetch accounts');
       const data = await res.json();
       setAccounts(data.accounts || []);
-    } catch (err) {
+    } catch {
       setError('Failed to load connected accounts');
     } finally {
       setLoading(false);
@@ -67,13 +67,9 @@ export function SocialAccountsCard() {
       
       // Remove from list
       setAccounts(accounts.filter(a => a.id !== id));
-    } catch (err) {
+    } catch {
       setError('Failed to disconnect account');
     }
-  }
-
-  function connectBuffer() {
-    window.location.href = '/api/social/buffer/connect';
   }
 
   if (loading) {
@@ -91,7 +87,7 @@ export function SocialAccountsCard() {
     <Card>
       <h2 className="text-base font-semibold text-slate-200 mb-1">Social Media Accounts</h2>
       <p className="text-sm text-slate-500 mb-4">
-        Connect your social media accounts to automatically post campaign content.
+        Track which platforms you post to. Your Publishing Queue links directly to each platform.
       </p>
       <Separator />
       
@@ -130,21 +126,8 @@ export function SocialAccountsCard() {
         </div>
       )}
 
-      {/* Connect Button */}
-      <div className="mt-4">
-        <button
-          onClick={connectBuffer}
-          className="inline-flex items-center gap-2 rounded-lg border border-violet-500/50 bg-violet-500/10 px-4 py-2.5 text-sm font-medium text-violet-300 hover:bg-violet-500/20 transition-colors"
-        >
-          <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
-          </svg>
-          Connect Social Accounts
-        </button>
-      </div>
-
-      <div className="mt-3 text-xs text-slate-500">
-        Powered by Buffer. Connect once to post to Twitter/X, LinkedIn, Facebook, Instagram, and more.
+      <div className="mt-4 rounded-lg bg-surface-raised border border-border-subtle p-3 text-xs text-slate-500 leading-relaxed">
+        Social accounts are managed directly on each platform. Use the Publishing Queue on your campaign page to copy content and open each platform with one click.
       </div>
     </Card>
   );

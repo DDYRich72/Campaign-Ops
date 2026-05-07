@@ -2,50 +2,25 @@
 
 /**
  * Image Generation Service
- * Uses DALL-E 3 to generate social media images from visual prompts
+ * Generates social media images via the configured image provider.
+ * To swap providers, set IMAGE_PROVIDER env var (see src/lib/image-provider.ts).
  */
 
-import { openai } from '@/lib/openai';
+import { getImageProvider } from '@/lib/image-provider';
 import { createServerClient } from '@/lib/supabase/server';
 
-const DALLE_MODEL = 'dall-e-3';
-const IMAGE_SIZE = '1024x1024'; // 1024x1024, 1024x1792, or 1792x1024
-const IMAGE_QUALITY = 'standard'; // 'standard' or 'hd'
-
-interface GeneratedImage {
-  url: string;
-  revised_prompt?: string;
-}
-
 /**
- * Generate an image using DALL-E 3 from a visual prompt
+ * Generate an image from a visual prompt using the active provider
  */
 export async function generateImage({
   prompt,
-  style = 'vivid', // 'vivid' (hyper-real, dramatic) or 'natural' (more subdued)
+  style = 'vivid',
 }: {
   prompt: string;
   style?: 'vivid' | 'natural';
-}): Promise<GeneratedImage> {
+}): Promise<{ url: string; revised_prompt?: string }> {
   try {
-    const response = await openai.images.generate({
-      model: DALLE_MODEL,
-      prompt,
-      size: IMAGE_SIZE as '1024x1024',
-      quality: IMAGE_QUALITY,
-      style,
-      n: 1,
-      response_format: 'url',
-    });
-
-    const imageUrl = response.data[0]?.url;
-    const revisedPrompt = response.data[0]?.revised_prompt;
-
-    if (!imageUrl) {
-      throw new Error('No image URL returned from DALL-E');
-    }
-
-    return { url: imageUrl, revised_prompt: revisedPrompt };
+    return await getImageProvider().generate({ prompt, style });
   } catch (err) {
     console.error('Image generation failed:', err);
     throw new Error(err instanceof Error ? err.message : 'Image generation failed');
@@ -107,7 +82,6 @@ export async function storeImageInSupabase({
  */
 export async function generateCampaignImages({
   campaignId,
-  clerkUserId,
   contentItems,
   onProgress,
 }: {
@@ -120,7 +94,6 @@ export async function generateCampaignImages({
   }>;
   onProgress?: (completed: number, total: number) => void;
 }) {
-  const supabase = createServerClient();
   const results: Array<{
     day: number;
     platform: string;

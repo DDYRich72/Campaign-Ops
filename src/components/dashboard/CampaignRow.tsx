@@ -5,8 +5,8 @@ import { Badge } from '@/components/ui/Badge';
 const statusConfig: Record<CampaignStatus, { label: string; variant: 'success' | 'warning' | 'default' | 'info' }> = {
   draft:    { label: 'Draft',    variant: 'default' },
   ready:    { label: 'Ready',    variant: 'info' },
-  active:   { label: 'Active',  variant: 'success' },
-  archived: { label: 'Archived',variant: 'warning' },
+  active:   { label: 'Active',   variant: 'success' },
+  archived: { label: 'Archived', variant: 'warning' },
 };
 
 function formatDate(iso: string) {
@@ -17,33 +17,33 @@ export function CampaignRow({ campaign }: { campaign: Campaign }) {
   const { label, variant } = statusConfig[campaign.status];
 
   return (
-    <tr className="group border-t border-border-subtle hover:bg-surface-raised/40 transition-colors">
-      <td className="py-3.5 pl-6 pr-3">
-        <div>
-          <p className="text-sm font-medium text-slate-300 group-hover:text-violet-300 transition-colors">
+    <tr className="group border-t border-rule hover:bg-paper transition-colors">
+      <td className="py-5 pl-7 pr-4">
+        <Link href={`/campaigns/${campaign.id}`} className="block">
+          <p className="font-display text-[16px] text-ink group-hover:underline group-hover:decoration-ink underline-offset-[6px] decoration-rule tracking-tight">
             {campaign.name}
           </p>
-          <p className="text-xs text-slate-600 mt-0.5">{campaign.businessName}</p>
-        </div>
+          <p className="text-[12px] text-ink-faint mt-1 italic">{campaign.businessName}</p>
+        </Link>
       </td>
-      <td className="px-3 py-3.5 hidden sm:table-cell">
+      <td className="px-4 py-5 hidden sm:table-cell">
         <Badge variant={variant} dot>{label}</Badge>
       </td>
-      <td className="px-3 py-3.5 hidden md:table-cell">
-        <p className="text-xs text-slate-500">{campaign.channels.length} channels</p>
+      <td className="px-4 py-5 hidden md:table-cell">
+        <p className="text-[12px] text-ink-soft tabular-nums">{campaign.channels.length} channels</p>
       </td>
-      <td className="px-3 py-3.5 hidden lg:table-cell">
-        <p className="text-xs text-slate-500">{campaign.assetCount} assets</p>
+      <td className="px-4 py-5 hidden lg:table-cell">
+        <p className="text-[12px] text-ink-soft tabular-nums">{campaign.assetCount} assets</p>
       </td>
-      <td className="px-3 py-3.5 hidden lg:table-cell">
-        <p className="text-xs text-slate-600">{formatDate(campaign.updatedAt)}</p>
+      <td className="px-4 py-5 hidden lg:table-cell">
+        <p className="text-[12px] text-ink-faint tabular-nums">{formatDate(campaign.updatedAt)}</p>
       </td>
-      <td className="py-3.5 pl-3 pr-6">
+      <td className="py-5 pl-4 pr-7">
         <Link
           href={`/campaigns/${campaign.id}`}
-          className="text-xs font-semibold text-cyan-500 hover:text-cyan-300 transition-colors"
+          className="text-[12px] text-ink hover:text-oxblood transition-colors whitespace-nowrap"
         >
-          View →
+          Open →
         </Link>
       </td>
     </tr>

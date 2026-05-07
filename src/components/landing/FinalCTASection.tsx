@@ -2,41 +2,44 @@ import Link from 'next/link';
 
 export function FinalCTASection() {
   return (
-    <section className="py-20 lg:py-28 bg-surface-sidebar relative overflow-hidden">
-      {/* Ambient glow */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <div className="w-[600px] h-[300px] bg-violet-500/10 rounded-full blur-3xl" />
-      </div>
-      <div className="absolute inset-0 bg-dot-grid-faint pointer-events-none" />
+    <section className="bg-paper-deep border-y border-rule">
+      <div className="mx-auto max-w-[1280px] px-6 sm:px-10 lg:px-14 py-28 lg:py-36">
+        <div className="flex items-baseline justify-between border-b border-rule pb-3 mb-16">
+          <p className="editorial-eyebrow">Colophon</p>
+          <p className="editorial-eyebrow hidden sm:block">An invitation</p>
+          <p className="editorial-eyebrow">Final page</p>
+        </div>
 
-      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-100 tracking-tight leading-tight font-display">
-            Your next campaign is{' '}
-            <span className="text-gradient">5 minutes away</span>
+        <div className="max-w-[820px] mx-auto text-center">
+          <p className="ornament-asterism" />
+
+          <h2 className="font-display text-[40px] sm:text-[58px] lg:text-[72px] leading-[1.0] text-ink tracking-[-0.02em]">
+            Your next campaign
+            <br />
+            is <span className="display-italic">five minutes</span> away.
           </h2>
-          <p className="mt-5 text-lg text-slate-400">
-            Stop putting off your next promotion. Describe your offer and let AI build the whole campaign while you focus on running your business.
+
+          <p className="mt-10 text-[17px] text-ink-soft leading-relaxed max-w-[560px] mx-auto">
+            Stop putting off your next promotion. Describe your offer; we&rsquo;ll draft the campaign while you focus on running your business.
           </p>
-          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
+
+          <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-6">
             <Link
               href="/sign-up"
-              className="inline-flex h-12 items-center justify-center rounded-xl btn-shimmer px-8 text-base font-semibold text-white shadow-glow-violet transition-all"
+              className="inline-flex h-12 items-center justify-center bg-ink px-8 text-[14px] font-medium text-paper hover:bg-black transition-colors rounded-[3px]"
             >
-              Start for Free
-              <svg className="ml-2 h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
-              </svg>
+              Begin a campaign
             </Link>
             <Link
-              href="/sign-up"
-              className="inline-flex h-12 items-center justify-center rounded-xl bg-surface-raised hover:bg-border-subtle border border-border-subtle px-8 text-base font-semibold text-slate-300 transition-colors"
+              href="/sign-in"
+              className="text-[14px] text-ink-soft hover:text-ink transition-colors underline underline-offset-[5px] decoration-rule hover:decoration-ink"
             >
-              Create a Campaign →
+              Already a subscriber? Sign in
             </Link>
           </div>
-          <p className="mt-5 text-xs text-slate-600">
-            No credit card required · Free to start · Cancel anytime
+
+          <p className="mt-10 text-[12px] text-ink-faint">
+            No credit card &middot; Free to start &middot; Cancel anytime
           </p>
         </div>
       </div>

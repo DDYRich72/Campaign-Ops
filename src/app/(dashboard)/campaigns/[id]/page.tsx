@@ -12,6 +12,7 @@ import { CampaignExportSection } from '@/components/campaigns/CampaignExportSect
 import { ReadinessChecklist } from '@/components/campaigns/ReadinessChecklist';
 import { CampaignStatusActions } from '@/components/campaigns/CampaignStatusActions';
 import { DeleteCampaignButton } from '@/components/campaigns/DeleteCampaignButton';
+import { SocialScheduleSection } from '@/components/campaigns/SocialScheduleSection';
 import type { CampaignRow, CampaignStatusDB } from '@/lib/supabase/types';
 
 const statusConfig: Record<
@@ -181,7 +182,7 @@ export default async function CampaignDetailPage({
                   {campaign.channels.map((ch) => (
                     <span
                       key={ch}
-                      className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 text-slate-700 capitalize"
+                      className="inline-flex items-center px-2.5 py-1 rounded-[2px] text-[11px] font-medium bg-rule-soft text-ink-soft border border-rule capitalize"
                     >
                       {ch.replace('_', ' ')}
                     </span>
@@ -221,6 +222,14 @@ export default async function CampaignDetailPage({
 
       {/* Readiness checklist */}
       <ReadinessChecklist campaign={campaign} />
+
+      {/* Publishing Queue */}
+      <SocialScheduleSection
+        campaignId={campaign.id}
+        fullContent={campaign.full_content_json ?? []}
+        initialPublishState={campaign.content_publish_state_json ?? {}}
+        isFree={isFree}
+      />
 
       {/* Export & Copy */}
       <CampaignExportSection
